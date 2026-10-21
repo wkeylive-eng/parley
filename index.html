@@ -579,6 +579,13 @@ VIEWS.today = (lang, variant) => {
       <div class="bar ${tx >= goal ? "good" : "gold"}"><i style="width:${Math.min(100, (tx / goal) * 100).toFixed(1)}%"></i></div>
     </div>
     ${needAi()}
+    ${!srOK && !S.settings.voiceTip ? `<div class="card"><h3>Set up voice input once</h3><p class="muted small">Inside the Claude app, you speak through your keyboard's dictation key. Two minutes of setup:</p>
+      <ol class="small" style="margin:0;padding-left:20px;display:grid;gap:4px">
+        <li>iPhone Settings › General › Keyboard › Keyboards › Add New Keyboard › <b>Chinese, Simplified › Pinyin – QWERTY</b> (add Spanish, Japanese or Korean the same way).</li>
+        <li>In the same Keyboard screen, make sure <b>Enable Dictation</b> is on.</li>
+        <li>In Parley, tap the mic button, tap 🌐 on the keyboard until it shows 中文, then tap the keyboard's 🎤 and talk. Your iPhone keeps that keyboard selected next time.</li>
+      </ol>
+      <button class="btn quiet" data-act="voice-tip-done">Done</button></div>` : ""}
     ${lang.code === "zh" && livePacks().length && livePacks()[0].id === "live-week" ? `<div class="card"><div class="row between"><span class="live-tag">New this week</span><span class="muted small mono">${livePacks()[0].items.length} terms</span></div><p>Fresh slang pulled from Chinese social media.</p><button class="btn quiet" data-act="tab" data-v="phrases">See this week's slang</button></div>` : ""}
     <div class="card">
       <div><h2>The daily loop</h2><p class="muted">Recall, listen, talk, then say it faster. About 20 minutes, or any one step when you have two.</p></div>
@@ -630,11 +637,11 @@ VIEWS.talk = (lang, variant) => {
       ${T.err ? `<div class="stack"><p class="err">${esc(T.err)}</p><button class="btn sm quiet" data-act="talk-retry">Try again</button></div>` : ""}
     </div>
     <div class="composer">
-      ${srOK ? `<button class="round ${T.listening ? "live" : ""}" data-act="talk-mic" aria-label="${T.listening ? "Stop listening" : "Speak"}">${T.listening ? SVG.stop : SVG.mic}</button>` : ""}
-      <textarea id="draft" rows="1" placeholder="${T.listening ? "Listening…" : `Say or type in ${esc(lang.name)}`}" aria-label="Your reply">${esc(T.draft)}</textarea>
+      ${srOK ? `<button class="round ${T.listening ? "live" : ""}" data-act="talk-mic" aria-label="${T.listening ? "Stop listening" : "Speak"}">${T.listening ? SVG.stop : SVG.mic}</button>` : `<button class="round" data-act="dictate" data-target="draft" aria-label="Speak with keyboard dictation">${SVG.mic}</button>`}
+      <textarea id="draft" rows="1" enterkeyhint="send" placeholder="${T.listening ? "Listening…" : `Say or type in ${esc(lang.name)}`}" aria-label="Your reply">${esc(T.draft)}</textarea>
       <button class="round ${T.draft.trim() ? "" : "off"}" id="sendBtn" data-act="send" aria-label="Send">${SVG.send}</button>
     </div>
-    ${srOK ? "" : `<p class="muted small">Tip: tap the mic on the iOS keyboard to speak your reply.</p>`}
+    ${srOK ? "" : `<p class="muted small">Tap the mic, then your keyboard's 🎤. Switch the keyboard to ${esc(lang.nativeName)} with 🌐 first.</p>`}
   </div>`;
 };
 
@@ -666,7 +673,8 @@ VIEWS.review = (lang, variant) => {
     ${!R.revealed
       ? `<div class="stack">${srOK ? `<button class="btn ${R.listening ? "danger" : "quiet"}" data-act="review-mic">${R.listening ? "Stop" : "Say it out loud"}</button>` : ""}
           <button class="btn" data-act="reveal">Reveal</button>
-          ${srOK ? "" : `<p class="muted small" style="text-align:center">Say it out loud before you reveal. The effort of recalling is what builds memory.</p>`}</div>`
+          ${srOK ? "" : `<div class="row"><button class="round" data-act="dictate" data-target="sayBox" aria-label="Say it with keyboard dictation">${SVG.mic}</button><input type="text" id="sayBox" class="grow" lang="${esc(loc)}" placeholder="Say it with the keyboard 🎤" value="${esc(R.said)}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+          <p class="muted small" style="text-align:center">Say it before you reveal. Dictating it gives you a match score.</p>`}</div>`
       : `<div class="stack"><button class="btn quiet" data-act="shadow" data-text="${esc(card.target)}" data-loc="${esc(loc)}">Shadow it: plays twice, speak along</button>
           <div class="grades">${["Again", "Hard", "Good", "Easy"].map((l, k) => `<button class="grade g${k + 1}" data-act="grade" data-v="${k + 1}">${l}<small>${fmtIvl(pv[k])}</small></button>`).join("")}</div></div>`}
   </div>`;
@@ -741,6 +749,14 @@ VIEWS.settings = () => {
       <label class="toggle" for="autoSpeak">Auto-play partner replies <input type="checkbox" id="autoSpeak" ${st.autoSpeak ? "checked" : ""}></label>
       <p style="font-weight:700">Speech speed</p><div class="chips wrapping">${chips("rate", [[0.7, "Slow"], [0.9, "Normal"], [1.05, "Native"]])}</div>
       <p class="muted small">For better voices: iOS Settings › Accessibility › Spoken Content › Voices, then download the Enhanced or Premium voice for each language.</p>
+    </div>
+    <div class="card"><h2>Voice input</h2>
+      <p class="muted">${srOK ? "Speech recognition works here, so the mic buttons listen directly." : "Inside the Claude app, Parley uses your keyboard's dictation key. Set it up once:"}</p>
+      ${srOK ? "" : `<ol class="small" style="margin:0;padding-left:20px;display:grid;gap:4px">
+        <li>iPhone Settings › General › Keyboard › Keyboards › Add New Keyboard › <b>Chinese, Simplified › Pinyin – QWERTY</b> (add Spanish, Japanese or Korean the same way).</li>
+        <li>In the same Keyboard screen, make sure <b>Enable Dictation</b> is on.</li>
+        <li>In Parley, tap the mic button, tap 🌐 on the keyboard until it shows 中文, then tap the keyboard's 🎤 and talk. Your iPhone keeps that keyboard selected next time.</li>
+      </ol>`}
     </div>
     <div class="card"><h2>Tone Lab</h2>
       <p class="muted">The Tone Lab draws your pitch as you speak Mandarin. It needs the microphone, so it runs in Safari. Paste its link here to open it from the Tones screen.</p>
@@ -885,8 +901,9 @@ VIEWS.drill = (lang, variant) => {
       <p class="timer ${D.running ? "live" : ""}" id="timer">${D.running ? D.left : ROUNDS[D.round]}</p>
       <p class="muted">${D.round === 0 ? "Talk without stopping. Use fillers instead of pausing. Mistakes are fine." : "Same story, less time. Say the same things faster and smoother."}</p>
       ${D.running ? `<button class="btn quiet" data-act="drill-stop">Done early</button>` : `<button class="btn" data-act="drill-start">Start round ${D.round + 1}</button>`}
-      <p class="muted small" id="drillText">${esc(D.transcript.slice(-220))}</p>
-      ${srOK ? "" : `<p class="muted small">Talk out loud against the timer. Word counts need the microphone, which works when this page is open in a Safari tab.</p>`}
+      ${srOK ? `<p class="muted small" id="drillText">${esc(D.transcript.slice(-220))}</p>` : D.running
+        ? `<textarea id="drillBox" rows="4" lang="${esc(variant.ttsLocale)}" placeholder="Tap your keyboard's 🎤 and talk" style="text-align:left">${esc(D.transcript)}</textarea>`
+        : `<p class="muted small">When the round starts, the keyboard opens. Tap its 🎤 and keep talking; your words fill in so you get speed and feedback.</p>`}
     </div>` : ""}
     ${D.results.length && D.results.some((r) => r.words) ? `<div class="card"><h2>Speed by round</h2>${D.results.map((r, i) => `<div class="stack" style="gap:4px"><div class="row between"><span>Round ${i + 1} <span class="muted mono small">${r.seconds}s</span></span><span class="mono small">${wpm(r)} wpm</span></div><div class="bar ${i === D.results.length - 1 ? "good" : ""}"><i style="width:${((wpm(r) / max) * 100).toFixed(1)}%"></i></div></div>`).join("")}<p class="muted small">Speed should climb across rounds. That's fluency forming.</p></div>` : ""}
     ${done ? `<div class="card"><h2>Drill done · <span class="mono">+${XP.drillRound * 3} XP</span></h2>
@@ -945,6 +962,7 @@ function startDrill(topic) {
 function drillStart() {
   const D = U.drill, secs = [90, 60, 45][D.round];
   D.left = secs; D.running = true; D.transcript = "";
+  if (!srOK) { D.timer = setInterval(() => { D.left -= 1; const el = $("#timer"); if (el) el.textContent = String(Math.max(0, D.left)); if (D.left <= 0) drillFinish(); }, 1000); render(); const box = $("#drillBox"); if (box) box.focus(); return; }
   listen({ lang: cur().variant.sttLocale, continuous: true, onText: (t) => { D.transcript = t; const el = $("#drillText"); if (el) el.textContent = t.slice(-220); } });
   D.timer = setInterval(() => { D.left -= 1; const el = $("#timer"); if (el) el.textContent = String(Math.max(0, D.left)); if (D.left <= 0) drillFinish(); }, 1000);
   render();
@@ -953,6 +971,7 @@ function drillFinish() {
   const D = U.drill; if (!D || !D.running) return;
   clearInterval(D.timer); D.running = false; stopListening();
   const secs = [90, 60, 45][D.round], spent = secs - Math.max(0, D.left) || secs;
+  const box = $("#drillBox"); if (box) D.transcript = box.value.trim();
   addXp(XP.drillRound); S.stats.drillRounds++; if (!srOK) S.stats.speakingSeconds += spent; save();
   setTimeout(() => { if (U.drill !== D) return; D.results.push({ seconds: spent, words: countWords(D.transcript), transcript: D.transcript }); D.round++; D.transcript = ""; render(); }, 700);
   render();
@@ -982,6 +1001,14 @@ document.addEventListener("click", async (ev) => {
     case "new-talk": stopListening(); U.talk = freshTalk(); render(); break;
     case "talk-retry": { const T = U.talk; T.err = null; T.busy = true; render(); talkCall(T, T.pending && T.pending.userMsg); break; }
     case "send": talkSubmit(); break;
+    case "dictate": {
+      const box = $("#" + el.dataset.target); if (!box) break;
+      box.focus(); try { box.setSelectionRange(box.value.length, box.value.length); } catch {}
+      if (el.dataset.target === "draft") U.talk.spoken = true;
+      if (!S.settings.dictateHinted) { S.settings.dictateHinted = true; save(); toast("Now tap 🎤 on your keyboard"); }
+      break;
+    }
+    case "voice-tip-done": S.settings.voiceTip = true; save(); render(); break;
     case "tr": { const m = U.talk.msgs[+el.dataset.i]; m.showTr = !m.showTr; render(); break; }
     case "reveal-fix": { U.talk.msgs[+el.dataset.i].reveal = true; render(); break; }
     case "retry-say": { const d = $("#draft"); if (d) d.focus(); break; }
@@ -1143,6 +1170,8 @@ Return ONLY JSON: {"summary": "...", "fixes": [{"said": "...", "better": "...", 
   }
 });
 document.addEventListener("input", (ev) => {
+  if (ev.target.id === "sayBox") U.review.said = ev.target.value;
+  if (ev.target.id === "drillBox" && U.drill) U.drill.transcript = ev.target.value;
   if (ev.target.id === "draft") {
     U.talk.draft = ev.target.value;
     const b = $("#sendBtn"); if (b) b.classList.toggle("off", !ev.target.value.trim());
@@ -1150,6 +1179,7 @@ document.addEventListener("input", (ev) => {
 });
 document.addEventListener("keydown", (ev) => {
   if (ev.target.id === "draft" && ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); talkSubmit(); }
+  if (ev.target.id === "sayBox" && ev.key === "Enter" && !ev.isComposing) { ev.preventDefault(); const b = document.querySelector('[data-act="reveal"]'); if (b) b.click(); }
 });
 document.addEventListener("change", (ev) => { if (ev.target.id === "autoSpeak") { S.settings.autoSpeak = ev.target.checked; save(); } });
 

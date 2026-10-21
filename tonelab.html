@@ -3,8 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tone Lab">
 <link rel="apple-touch-icon" href="tonelab-180.png">
 <title>Tone Lab</title>
@@ -299,7 +297,8 @@ const current = () => (mode === "test" ? ["", "", "", "11"] : SETS[mode][idx % S
 function envNotice() {
   const notes = [];
   if (!MIC_OK) notes.push("This browser can't use the microphone here. Open the page in Safari over https.");
-  if (mode === "test" && (!SR || STANDALONE)) notes.push("The listener test uses Apple's speech recognition, which only works when this page is open in a regular Safari tab (not from the Home Screen). Siri or Dictation also needs to be on.");
+  if (mode === "test" && STANDALONE) notes.push("This icon opens Tone Lab as a web app, where Apple turns off speech recognition. Delete the icon, then in Safari tap Share › Add to Home Screen again and switch off “Open as Web App”.");
+  else if (mode === "test" && !SR) notes.push("This browser has no speech recognition. Open Tone Lab in Safari on your iPhone, with Siri or Dictation turned on.");
   if (!range && mode !== "test") notes.push("First, set your voice range so the chart knows what high and low mean for you.");
   return notes.length ? `<div class="card notice">${notes.map((n) => `<p class="small">${esc(n)}</p>`).join("")}${!range && mode !== "test" && MIC_OK ? `<button class="btn primary" data-act="calibrate">${calibrating && recording ? "Listening… say mā má mǎ mà" : "Set my voice range"}</button>` : ""}</div>` : "";
 }
