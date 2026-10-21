@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tone Lab">
+<link rel="apple-touch-icon" href="tonelab-180.png">
+<title>Tone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: single column practice bench; the pitch chart is the hero, controls sit under the thumb. */
+:root {
+  --bg: #EDF0F3; --surface: #FFFFFF; --surface-2: #E2E7EC; --line: #CFD6DE; --ink: #141820; --muted: #586272;
+  --accent: #0A7782; --accent-ink: #FFFFFF; --band: rgba(10, 119, 130, 0.18); --gold: #B87410; --good: #1D8752; --bad: #C23838; --gold-soft: #F6E8CB;
+  --display: "Bricolage Grotesque", system-ui, -apple-system, "PingFang SC", sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "PingFang SC", "Noto Sans SC", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0F1215; --surface: #171B20; --surface-2: #20262D; --line: #2C333C; --ink: #E8ECF0; --muted: #949CA9;
+    --accent: #3ABDC8; --accent-ink: #03262A; --band: rgba(58, 189, 200, 0.22); --gold: #F0B04A; --good: #48C985; --bad: #F06C6C; --gold-soft: #3A2D16; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.45 var(--body); -webkit-tap-highlight-color: transparent;
+  padding: max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(28px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+h2 { font-size: 1.2rem; font-weight: 800; }
+p { margin: 0; }
+.muted { color: var(--muted); font-size: 0.92rem; }
+.small { font-size: 0.84rem; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.row { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 13px; font: 700 0.9rem var(--body); cursor: pointer; }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn { appearance: none; border: 1px solid transparent; border-radius: 12px; padding: 12px 16px; font: 700 1rem var(--body); cursor: pointer; background: var(--surface-2); color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; border-color: var(--line); }
+.btn:disabled { opacity: 0.45; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.word { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.hz { font-size: 3rem; font-weight: 700; line-height: 1.1; }
+.rec { width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; cursor: pointer; flex: none; }
+.rec.live { background: var(--bad); color: #fff; animation: pulse 1s ease-in-out infinite; }
+.rec svg { width: 32px; height: 32px; }
+@keyframes pulse { 50% { transform: scale(0.94); } }
+@media (prefers-reduced-motion: reduce) { .rec.live { animation: none; } }
+canvas { width: 100%; height: 220px; display: block; border-radius: 10px; background: var(--surface-2); }
+.verdict { display: flex; flex-direction: column; gap: 6px; }
+.verdict p b.ok { color: var(--good); } .verdict p b.no { color: var(--bad); }
+.notice { background: var(--gold-soft); border-color: transparent; }
+.tg { width: 22px; height: 22px; vertical-align: middle; }
+.big-result { font: 800 1.4rem var(--display); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row between" style="align-items:flex-end">
+    <div><p class="muted small" style="letter-spacing:.08em;text-transform:uppercase;font-weight:700">Mandarin pitch coach</p><h1>Tone Lab</h1></div>
+    <p class="mono small muted" id="stat"></p>
+  </div>
+  <div id="env"></div>
+  <div class="chips" role="group" aria-label="Practice set">
+    <button class="chip" data-mode="single">Single tones</button>
+    <button class="chip" data-mode="pairs">Tone pairs</button>
+    <button class="chip" data-mode="sandhi">Tone changes</button>
+    <button class="chip" data-mode="test">Can a listener tell?</button>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+
+// [characters, pinyin as written, meaning, spoken tone pattern, note]
+const SETS = {
+  single: [["妈", "mā", "mom", "1"], ["麻", "má", "numb; hemp", "2"], ["马", "mǎ", "horse", "3"], ["骂", "mà", "to scold", "4"],
+    ["汤", "tāng", "soup", "1"], ["糖", "táng", "sugar", "2"], ["躺", "tǎng", "to lie down", "3"], ["烫", "tàng", "scalding hot", "4"],
+    ["书", "shū", "book", "1"], ["熟", "shú", "familiar; ripe", "2"], ["鼠", "shǔ", "mouse", "3"], ["树", "shù", "tree", "4"]],
+  pairs: [["飞机", "fēijī", "airplane", "11"], ["今天", "jīntiān", "today", "11"], ["中国", "Zhōngguó", "China", "12"], ["欢迎", "huānyíng", "welcome", "12"], ["铅笔", "qiānbǐ", "pencil", "13"], ["开始", "kāishǐ", "begin", "13"], ["工作", "gōngzuò", "work", "14"], ["音乐", "yīnyuè", "music", "14"], ["明天", "míngtiān", "tomorrow", "21"], ["昨天", "zuótiān", "yesterday", "21"], ["学习", "xuéxí", "study", "22"], ["银行", "yínháng", "bank", "22"], ["苹果", "píngguǒ", "apple", "23"], ["没有", "méiyǒu", "don't have", "23"], ["学校", "xuéxiào", "school", "24"], ["同事", "tóngshì", "coworker", "24"], ["老师", "lǎoshī", "teacher", "31"], ["手机", "shǒujī", "cell phone", "31"], ["美国", "Měiguó", "USA", "32"], ["旅游", "lǚyóu", "travel", "32"], ["考试", "kǎoshì", "exam", "34"], ["可爱", "kě'ài", "cute", "34"], ["面包", "miànbāo", "bread", "41"], ["汽车", "qìchē", "car", "41"], ["问题", "wèntí", "question", "42"], ["大学", "dàxué", "university", "42"], ["电脑", "diànnǎo", "computer", "43"], ["外语", "wàiyǔ", "foreign language", "43"], ["再见", "zàijiàn", "goodbye", "44"], ["电话", "diànhuà", "phone call", "44"], ["妈妈", "māma", "mom", "10"], ["东西", "dōngxi", "thing", "10"], ["朋友", "péngyou", "friend", "20"], ["时候", "shíhou", "time, moment", "20"], ["喜欢", "xǐhuan", "to like", "30"], ["姐姐", "jiějie", "older sister", "30"], ["谢谢", "xièxie", "thanks", "40"], ["弟弟", "dìdi", "younger brother", "40"], ["咖啡", "kāfēi", "coffee", "11"], ["星期", "xīngqī", "week", "11"], ["安全", "ānquán", "safe", "12"], ["新闻", "xīnwén", "news", "12"], ["身体", "shēntǐ", "body", "13"], ["发展", "fāzhǎn", "develop", "13"], ["方便", "fāngbiàn", "convenient", "14"], ["医院", "yīyuàn", "hospital", "14"], ["国家", "guójiā", "country", "21"], ["时间", "shíjiān", "time", "21"], ["回答", "huídá", "answer", "22"], ["人民", "rénmín", "the people", "22"], ["牛奶", "niúnǎi", "milk", "23"], ["词典", "cídiǎn", "dictionary", "23"], ["成绩", "chéngjì", "grades, results", "24"], ["文化", "wénhuà", "culture", "24"], ["北京", "Běijīng", "Beijing", "31"], ["首都", "shǒudū", "capital city", "31"], ["很忙", "hěn máng", "very busy", "32"], ["语言", "yǔyán", "language", "32"], ["比赛", "bǐsài", "match, competition", "34"], ["礼物", "lǐwù", "gift", "34"], ["上班", "shàngbān", "go to work", "41"], ["大家", "dàjiā", "everyone", "41"], ["练习", "liànxí", "practice", "42"], ["地图", "dìtú", "map", "42"], ["跳舞", "tiàowǔ", "dance", "43"], ["报纸", "bàozhǐ", "newspaper", "43"], ["现在", "xiànzài", "now", "44"], ["运动", "yùndòng", "exercise, sports", "44"], ["桌子", "zhuōzi", "table", "10"], ["孩子", "háizi", "child", "20"], ["早上", "zǎoshang", "morning", "30"], ["意思", "yìsi", "meaning", "40"]],
+  sandhi: [["你好", "nǐ hǎo", "hello", "23", "Said ní hǎo: two 3rd tones, the first becomes a 2nd."],
+    ["可以", "kěyǐ", "can, may", "23", "Said kéyǐ."], ["水果", "shuǐguǒ", "fruit", "23", "Said shuíguǒ."],
+    ["不是", "bú shì", "is not", "24", "不 before a 4th tone is said bú."], ["不要", "bú yào", "don't", "24", "不 before a 4th tone is said bú."],
+    ["一起", "yìqǐ", "together", "43", "一 before a 3rd tone is said yì."], ["一样", "yíyàng", "the same", "24", "一 before a 4th tone is said yí."]],
+};
+const PAIRS = [["睡觉", "shuìjiào", "to sleep", "水饺", "shuǐjiǎo", "dumplings"], ["请问", "qǐngwèn", "excuse me, may I ask", "亲吻", "qīnwěn", "to kiss"],
+  ["大衣", "dàyī", "overcoat", "大姨", "dàyí", "aunt"], ["买房", "mǎi fáng", "buy a house", "卖房", "mài fáng", "sell a house"],
+  ["杯子", "bēizi", "cup", "被子", "bèizi", "quilt"], ["包子", "bāozi", "steamed bun", "雹子", "báozi", "hailstone"]];
+
+// Chao tone templates (1 = your lowest, 5 = your highest), 12 points each.
+const lin = (a, b) => Array.from({ length: 12 }, (_, i) => a + ((b - a) * i) / 11);
+const TPL = {
+  "1": Array(12).fill(4.6), "2": lin(2.8, 4.8), "4": lin(4.8, 1.3),
+  "3f": [2, 1.6, 1.2, 1, 1, 1, 1.3, 1.8, 2.4, 3, 3.5, 4], "3h": [2, 1.8, 1.5, 1.3, 1.1, 1, 1, 1, 1, 1, 1, 1],
+};
+const TIPS = {
+  "1>4": "Hold one high, steady pitch, like singing a note. Don't let it fall.", "1>2": "Start high, not in the middle, and stay level.", "1>3": "Lift it up. Tone 1 sits at the top of your voice.",
+  "2>1": "Let it climb. Rise like a surprised 'Huh?'", "2>3": "Don't dip first. Start in the middle and go straight up.", "2>4": "That fell instead of rising. Think of asking 'What?'",
+  "3>1": "Drop low. Tone 3 lives at the bottom of your voice.", "3>2": "Go lower before anything rises; in the middle of a phrase, just stay low.", "3>4": "Start lower and stay down rather than falling from high.",
+  "4>1": "Start high and drop hard, like a firm 'No!'", "4>2": "That rose. Snap it downward from the top.", "4>3": "Start from the top of your voice, then drop.",
+};
+function toneGlyph(t) {
+  if (t === "0") return '<svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="15" r="3" fill="currentColor"/></svg>';
+  const d = { "1": "M3 6 H21", "2": "M3 18 L21 5", "3": "M3 11 L10 19 L21 7", "4": "M3 5 L21 19" }[t];
+  return `<svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// ───────── environment ─────────
+const STANDALONE = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MIC_OK = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
+const synth = window.speechSynthesis;
+let voices = [];
+const loadVoices = () => { try { voices = synth ? synth.getVoices().filter((v) => /^zh[-_]cn/i.test(v.lang)) : []; } catch {} };
+loadVoices(); if (synth) synth.onvoiceschanged = loadVoices;
+function hear(text) {
+  if (!synth) return;
+  try { synth.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "zh-CN"; const v = voices.find((x) => /premium|enhanced/i.test(x.name)) || voices[0]; if (v) u.voice = v; u.rate = 0.8; synth.speak(u); } catch {}
+}
+
+// ───────── state ─────────
+let range = (() => { try { return JSON.parse(lsGet("tonelab-range") || "null"); } catch { return null; } })(); // {lo, hi} semitones re 100 Hz
+let stats = (() => { try { return JSON.parse(lsGet("tonelab-stats") || "null") || { n: 0, sum: 0, test: 0, testOk: 0 }; } catch { return { n: 0, sum: 0, test: 0, testOk: 0 }; } })();
+let mode = lsGet("tonelab-mode") || "single";
+let idx = 0, recording = false, lastResult = null, lastFrames = null, calibrating = false, testResult = null, myAudioUrl = null;
+
+// ───────── audio + pitch ─────────
+let ctx, stream, analyser, buf, recorder, chunks = [];
+async function ensureAudio() {
+  if (!ctx) {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 4096; src.connect(analyser);
+    buf = new Float32Array(analyser.fftSize);
+  }
+  if (ctx.state === "suspended") await ctx.resume();
+}
+// YIN on a 2x-decimated frame
+function pitchOf(frame, sr) {
+  const n = frame.length >> 1, x = new Float32Array(n);
+  for (let i = 0; i < n; i++) x[i] = 0.5 * (frame[2 * i] + frame[2 * i + 1]);
+  const s = sr / 2, W = Math.min(768, n >> 1), minLag = Math.floor(s / 450), maxLag = Math.min(Math.floor(s / 70), n - W - 2);
+  let e = 0; for (let i = 0; i < W; i++) e += x[i] * x[i];
+  const rms = Math.sqrt(e / W);
+  const d = new Float32Array(maxLag + 2);
+  for (let tau = 1; tau <= maxLag + 1; tau++) { let sum = 0; for (let i = 0; i < W; i++) { const v = x[i] - x[i + tau]; sum += v * v; } d[tau] = sum; }
+  let run = 0; d[0] = 1;
+  for (let tau = 1; tau <= maxLag + 1; tau++) { run += d[tau]; d[tau] = run ? (d[tau] * tau) / run : 1; }
+  let tau = -1;
+  for (let t = minLag; t <= maxLag; t++) { if (d[t] < 0.15) { while (t + 1 <= maxLag && d[t + 1] < d[t]) t++; tau = t; break; } }
+  if (tau < 2) return { f: 0, rms };
+  const a = d[tau - 1], b = d[tau], c = d[tau + 1], den = a + c - 2 * b;
+  return { f: s / (tau + (den ? (a - c) / (2 * den) : 0)), rms };
+}
+async function startRecording() {
+  await ensureAudio();
+  recording = true; lastResult = null; lastFrames = null; if (myAudioUrl) { URL.revokeObjectURL(myAudioUrl); myAudioUrl = null; }
+  chunks = [];
+  try { recorder = new MediaRecorder(stream); recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data); recorder.onstop = () => { if (chunks.length) { myAudioUrl = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType })); render(); } }; recorder.start(); } catch { recorder = null; }
+  render();
+  const frames = [], t0 = performance.now(), noise = [];
+  let lastVoiced = 0, seenVoice = false;
+  const tick = () => {
+    if (!recording) return;
+    analyser.getFloatTimeDomainData(buf);
+    const t = (performance.now() - t0) / 1000;
+    const r = pitchOf(buf, ctx.sampleRate);
+    if (t < 0.25) noise.push(r.rms);
+    const gate = Math.max(0.006, 3 * (noise.slice().sort((a, b) => a - b)[noise.length >> 1] || 0));
+    const voiced = t >= 0.25 && r.rms > gate && r.f >= 70 && r.f <= 450;
+    frames.push({ t, f: voiced ? r.f : 0, rms: r.rms });
+    if (voiced) { seenVoice = true; lastVoiced = t; }
+    if ((seenVoice && t - lastVoiced > 0.6) || t > 4) return stopRecording(frames);
+    setTimeout(tick, 20);
+  };
+  tick();
+}
+function stopRecording(frames) {
+  recording = false;
+  try { recorder && recorder.state !== "inactive" && recorder.stop(); } catch {}
+  lastFrames = frames || lastFrames;
+  if (lastFrames) {
+    if (calibrating) calibrate(lastFrames);
+    else lastResult = analyze(lastFrames, current());
+  }
+  render();
+}
+
+// ───────── analysis ─────────
+const pct = (arr, p) => { const a = arr.slice().sort((x, y) => x - y); return a.length ? a[Math.min(a.length - 1, Math.max(0, Math.round((p / 100) * (a.length - 1))))] : 0; };
+const st = (f) => 12 * Math.log2(f / 100);
+function cleanVoiced(frames) {
+  const v = frames.filter((x) => x.f > 0);
+  if (!v.length) return [];
+  const med = pct(v.map((x) => x.f), 50);
+  v.forEach((x) => { if (x.f > 1.75 * med) x.f /= 2; else if (x.f < 0.58 * med) x.f *= 2; });
+  return v.map((x, i) => { const w = v.slice(Math.max(0, i - 2), i + 3).map((y) => y.f); return { t: x.t, rms: x.rms, s: st(pct(w, 50)) }; });
+}
+function calibrate(frames) {
+  calibrating = false;
+  const v = cleanVoiced(frames);
+  if (v.length < 15) { lastResult = { error: "I couldn't hear enough voice. Try again a little louder and closer to the mic." }; return; }
+  let lo = pct(v.map((x) => x.s), 5), hi = pct(v.map((x) => x.s), 95);
+  if (hi - lo < 8) { const m = (hi + lo) / 2; lo = m - 4; hi = m + 4; }
+  range = { lo, hi }; lsSet("tonelab-range", JSON.stringify(range));
+  lastResult = { calibrated: true };
+}
+function segments(v, n) {
+  const runs = []; let curRun = [];
+  v.forEach((x, i) => { if (i && x.t - v[i - 1].t > 0.07) { runs.push(curRun); curRun = []; } curRun.push(x); });
+  if (curRun.length) runs.push(curRun);
+  let good = runs.filter((r) => r.length >= 4);
+  if (good.length >= n) return good.sort((a, b) => b.length - a.length).slice(0, n).sort((a, b) => a[0].t - b[0].t);
+  if (n === 2 && good.length === 1) {
+    const r = good[0], a = Math.floor(r.length * 0.3), b = Math.ceil(r.length * 0.7);
+    let cut = Math.floor(r.length / 2), min = Infinity;
+    for (let i = a; i < b; i++) if (r[i].rms < min) { min = r[i].rms; cut = i; }
+    return [r.slice(0, cut), r.slice(cut)];
+  }
+  return good.length ? good : [v];
+}
+function resample(seg) { return Array.from({ length: 12 }, (_, i) => seg[Math.min(seg.length - 1, Math.round((i * (seg.length - 1)) / 11))].lvl); }
+function dist(u, tpl) {
+  let o = 0; for (let i = 0; i < 12; i++) o += u[i] - tpl[i]; o = Math.max(-0.7, Math.min(0.7, o / 12));
+  let e = 0; for (let i = 0; i < 12; i++) e += (u[i] - tpl[i] - o) ** 2; return Math.sqrt(e / 12);
+}
+function analyze(frames, item) {
+  const v = cleanVoiced(frames);
+  if (v.length < 8) return { error: "I couldn't hear a clear voice. Try again a little louder, closer to the mic." };
+  let r = range;
+  if (!r) { let lo = pct(v.map((x) => x.s), 5), hi = pct(v.map((x) => x.s), 95); if (hi - lo < 8) { const m = (hi + lo) / 2; lo = m - 4; hi = m + 4; } r = { lo, hi }; }
+  v.forEach((x) => (x.lvl = Math.max(0.3, Math.min(5.7, 1 + (4 * (x.s - r.lo)) / (r.hi - r.lo)))));
+  const pattern = item[3], n = pattern.length;
+  const segs = segments(v, n);
+  const out = segs.map((seg, i) => {
+    const target = pattern[i];
+    if (!target || target === "0" || seg.length < 3) return { target: target || "?", heard: null, seg };
+    const u = resample(seg), final = i === n - 1;
+    const cands = { "1": dist(u, TPL["1"]), "2": dist(u, TPL["2"]), "3": final ? Math.min(dist(u, TPL["3f"]), dist(u, TPL["3h"])) : dist(u, TPL["3h"]), "4": dist(u, TPL["4"]) };
+    const heard = Object.entries(cands).sort((a, b) => a[1] - b[1])[0][0];
+    return { target, heard, score: Math.max(0, Math.min(100, Math.round(100 - 38 * cands[target]))), seg };
+  });
+  const scored = out.filter((x) => x.heard);
+  const score = scored.length ? Math.round(scored.reduce((a, x) => a + x.score, 0) / scored.length) : null;
+  if (score !== null) { stats.n++; stats.sum += score; lsSet("tonelab-stats", JSON.stringify(stats)); }
+  return { v, segs: out, score, t0: v[0].t, t1: v[v.length - 1].t, approx: !range };
+}
+
+// ───────── drawing ─────────
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function draw() {
+  const c = $("#chart"); if (!c) return;
+  const dpr = window.devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
+  c.width = W * dpr; c.height = H * dpr;
+  const g = c.getContext("2d"); g.scale(dpr, dpr);
+  const padL = 40, padR = 10, padT = 12, padB = 14;
+  const y = (lvl) => padT + ((5.5 - lvl) / 5) * (H - padT - padB);
+  g.font = "11px " + css("--mono"); g.fillStyle = css("--muted"); g.strokeStyle = css("--line"); g.lineWidth = 1;
+  [["5", "high"], ["3", "mid"], ["1", "low"]].forEach(([l, name]) => { g.beginPath(); g.moveTo(padL, y(+l)); g.lineTo(W - padR, y(+l)); g.stroke(); g.fillText(name, 4, y(+l) + 4); });
+  const res = lastResult;
+  const item = current(), pattern = item[3];
+  // target band(s)
+  const t0 = res && res.v ? res.t0 : 0, t1 = res && res.v ? res.t1 : 1;
+  const x = (t) => padL + ((t - t0) / Math.max(0.05, t1 - t0)) * (W - padL - padR);
+  const spans = res && res.segs ? res.segs.map((s) => [s.seg[0].t, s.seg[s.seg.length - 1].t]) : pattern.split("").map((_, i, a) => [t0 + ((t1 - t0) * i) / a.length + 0.02, t0 + ((t1 - t0) * (i + 1)) / a.length - 0.02]);
+  g.lineCap = "round"; g.lineJoin = "round";
+  pattern.split("").forEach((tn, i) => {
+    if (tn === "0" || !spans[i]) return;
+    const tpl = tn === "3" ? (i === pattern.length - 1 ? TPL["3f"] : TPL["3h"]) : TPL[tn];
+    const [a, b] = spans[i];
+    g.strokeStyle = css("--band"); g.lineWidth = 18; g.beginPath();
+    tpl.forEach((lv, k) => { const xx = x(a + ((b - a) * k) / 11), yy = y(lv); k ? g.lineTo(xx, yy) : g.moveTo(xx, yy); });
+    g.stroke();
+  });
+  if (!res || !res.v) { g.fillStyle = css("--muted"); g.font = "13px " + css("--body"); g.fillText("Shaded: target. Yours draws on top.", padL + 6, H - 22); return; }
+  g.strokeStyle = css("--accent"); g.lineWidth = 3;
+  let prev = null;
+  res.v.forEach((p) => { const xx = x(p.t), yy = y(p.lvl); if (prev && p.t - prev.t < 0.08) { g.beginPath(); g.moveTo(x(prev.t), y(prev.lvl)); g.lineTo(xx, yy); g.stroke(); } prev = p; });
+}
+
+// ───────── views ─────────
+const current = () => (mode === "test" ? ["", "", "", "11"] : SETS[mode][idx % SETS[mode].length]);
+function envNotice() {
+  const notes = [];
+  if (!MIC_OK) notes.push("This browser can't use the microphone here. Open the page in Safari over https.");
+  if (mode === "test" && (!SR || STANDALONE)) notes.push("The listener test uses Apple's speech recognition, which only works when this page is open in a regular Safari tab (not from the Home Screen). Siri or Dictation also needs to be on.");
+  if (!range && mode !== "test") notes.push("First, set your voice range so the chart knows what high and low mean for you.");
+  return notes.length ? `<div class="card notice">${notes.map((n) => `<p class="small">${esc(n)}</p>`).join("")}${!range && mode !== "test" && MIC_OK ? `<button class="btn primary" data-act="calibrate">${calibrating && recording ? "Listening… say mā má mǎ mà" : "Set my voice range"}</button>` : ""}</div>` : "";
+}
+function render() {
+  document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
+  $("#stat").textContent = stats.n ? `avg ${Math.round(stats.sum / stats.n)} · ${stats.n} tries` : "";
+  $("#env").innerHTML = envNotice();
+  if (mode === "test") return renderTest();
+  const item = current(), [hz, py, en, pat, note] = item, res = lastResult;
+  let verdict = "";
+  if (res && res.calibrated) verdict = `<p><b class="ok">Voice range saved.</b> Now try the word above.</p>`;
+  else if (res && res.error) verdict = `<p class="small">${esc(res.error)}</p>`;
+  else if (res && res.segs) {
+    verdict = res.segs.map((s, i) => {
+      if (!s.heard) return s.target === "0" ? `<p class="small">Syllable ${i + 1}: neutral tone. Keep it short and light.</p>` : "";
+      const ok = s.heard === s.target;
+      return `<p>Syllable ${i + 1}: target ${toneGlyph(s.target)} ${s.target}, ${ok ? `<b class="ok">sounded right</b>` : `<b class="no">sounded like ${s.heard}</b>`} <span class="mono small muted">${s.score}</span>${ok ? "" : `<br><span class="small">${esc(TIPS[s.target + ">" + s.heard] || "Listen again and copy the shape.")}</span>`}</p>`;
+    }).join("") + (res.score !== null ? `<p class="big-result mono">${res.score}<span class="muted small"> / 100</span></p>` : "") + (res.approx ? `<p class="muted small">Rough reading: set your voice range for accurate high and low.</p>` : "");
+  }
+  $("#main").innerHTML = `
+    <div class="card">
+      <div class="word"><div><p class="hz" lang="zh-CN">${esc(hz)}</p><p class="mono">${esc(py)}</p><p class="muted">${esc(en)}</p></div>
+        <div class="row" style="gap:2px">${pat.split("").map(toneGlyph).join("")}</div></div>
+      ${note ? `<p class="small">${esc(note)}</p>` : ""}
+      <canvas id="chart" aria-label="Pitch chart"></canvas>
+      <div class="row between">
+        <button class="btn" data-act="hear">Hear it</button>
+        <button class="rec ${recording ? "live" : ""}" data-act="rec" aria-label="${recording ? "Stop" : "Record"}" ${MIC_OK ? "" : "disabled"}>${recording ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'}</button>
+        <button class="btn" data-act="next">Next</button>
+      </div>
+      <div class="verdict">${verdict}</div>
+      ${myAudioUrl ? `<button class="btn ghost" data-act="mine">Play my recording</button>` : ""}
+    </div>
+    <p class="muted small">Listen to the model first (it plays when a new word appears), then tap the mic and copy it once; recording stops by itself. Practicing speaking builds speaking and listening practice builds listening, so pair this with the Tones drill in Parley.</p>
+    ${range ? `<button class="btn ghost" data-act="calibrate">${calibrating && recording ? "Listening… say mā má mǎ mà" : "Reset my voice range"}</button>` : ""}`;
+  requestAnimationFrame(draw);
+}
+let testIdx = 0, testWord = null;
+function newTestWord() { const p = PAIRS[Math.floor(Math.random() * PAIRS.length)], k = Math.random() < 0.5 ? 0 : 3; testWord = { hz: p[k], py: p[k + 1], en: p[k + 2], other: p[3 - k], otherPy: p[4 - k], otherEn: p[5 - k] }; testResult = null; }
+function renderTest() {
+  if (!testWord) newTestWord();
+  const w = testWord, r = testResult, can = SR && !STANDALONE;
+  $("#main").innerHTML = `
+    <div class="card">
+      <p class="muted">Say this word. Apple's speech recognizer plays the listener: it can't lean on context, so only your tones tell it which word you meant.</p>
+      <div><p class="hz" lang="zh-CN">${esc(w.hz)}</p><p class="mono">${esc(w.py)}</p><p class="muted">${esc(w.en)}</p></div>
+      <p class="small muted">Not to be confused with ${esc(w.other)} ${esc(w.otherPy)} (${esc(w.otherEn)}).</p>
+      <div class="row between">
+        <button class="btn" data-act="hear-test">Hear it</button>
+        <button class="rec ${recording ? "live" : ""}" data-act="say-test" aria-label="Say it" ${can ? "" : "disabled"}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="btn" data-act="next-test">Next</button>
+      </div>
+      ${r ? `<div class="verdict">${r.ok ? `<p class="big-result" style="color:var(--good)">Understood ✓</p>` : r.other ? `<p class="big-result" style="color:var(--bad)">Heard as ${esc(w.other)}</p><p class="small">Your tones said "${esc(w.otherEn)}". Practice ${esc(w.py)} in the other sets, then try again.</p>` : `<p class="big-result">Unclear</p>`}<p class="muted small">Recognizer heard: “${esc(r.text || "nothing")}”</p></div>` : ""}
+    </div>
+    <p class="muted small mono">${stats.test ? `${stats.testOk} / ${stats.test} understood` : ""}</p>
+    <p class="muted small">Recognizers favor common words, so getting the rarer word of each pair right (水饺, 亲吻, 大姨, 雹子) is the stronger proof your tones are working.</p>`;
+}
+function sayTest() {
+  if (!SR || STANDALONE || recording) return;
+  try { synth && synth.cancel(); } catch {}
+  const rec = new SR(); rec.lang = "zh-CN"; rec.interimResults = false; rec.maxAlternatives = 1; rec.continuous = false;
+  let text = "";
+  rec.onresult = (e) => { text = Array.from(e.results).map((x) => x[0].transcript).join(""); };
+  rec.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") text = "(microphone or speech recognition not allowed)"; };
+  rec.onend = () => {
+    recording = false;
+    const clean = text.replace(/[\s\p{P}]/gu, "");
+    const ok = clean.includes(testWord.hz), other = !ok && clean.includes(testWord.other);
+    testResult = { ok, other, text }; stats.test++; if (ok) stats.testOk++; lsSet("tonelab-stats", JSON.stringify(stats));
+    render();
+  };
+  recording = true; render(); rec.start();
+}
+
+document.addEventListener("click", async (e) => {
+  const m = e.target.closest("[data-mode]");
+  if (m) { mode = m.dataset.mode; lsSet("tonelab-mode", mode); idx = 0; lastResult = null; testResult = null; render(); if (mode !== "test") hear(current()[0]); return; }
+  const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
+  const act = b.dataset.act;
+  try {
+    if (act === "hear") hear(current()[0]);
+    else if (act === "next") { idx++; lastResult = null; if (myAudioUrl) { URL.revokeObjectURL(myAudioUrl); myAudioUrl = null; } render(); hear(current()[0]); }
+    else if (act === "rec") { if (recording) stopRecording(); else { calibrating = false; await startRecording(); } }
+    else if (act === "calibrate") { if (recording) return; calibrating = true; await startRecording(); }
+    else if (act === "mine" && myAudioUrl) new Audio(myAudioUrl).play();
+    else if (act === "hear-test") hear(testWord.hz);
+    else if (act === "say-test") sayTest();
+    else if (act === "next-test") { newTestWord(); render(); }
+  } catch (err) {
+    recording = false; calibrating = false;
+    lastResult = { error: err && err.name === "NotAllowedError" ? "Microphone access was blocked. In iOS Settings › Safari › Microphone, allow it, then reload." : "Couldn't start the microphone: " + (err && err.message ? err.message : err) };
+    render();
+  }
+});
+window.addEventListener("resize", () => requestAnimationFrame(draw));
+render();
+</script>
+</body>
+</html>

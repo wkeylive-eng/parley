@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Parley">
+<meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1215" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<script>window.PARLEY_STANDALONE = true;</script>
+<title>Parley</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one-screen app — scrolling view above a fixed tab bar; cards only where an item is a distinct object. */
+:root {
+  --bg: #EDF0F3;
+  --surface: #FFFFFF;
+  --surface-2: #E2E7EC;
+  --line: #CFD6DE;
+  --ink: #141820;
+  --muted: #586272;
+  --accent: #0A7782;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D3ECEE;
+  --gold: #B87410;
+  --gold-soft: #F6E8CB;
+  --good: #1D8752;
+  --warn: #A86D12;
+  --bad: #C23838;
+  --polite: #2F5FD0;
+  --display: "Bricolage Grotesque", ui-rounded, system-ui, -apple-system, "Hiragino Sans", "Apple SD Gothic Neo", sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Hiragino Sans", "Apple SD Gothic Neo", "Noto Sans CJK JP", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1215; --surface: #171B20; --surface-2: #20262D; --line: #2C333C; --ink: #E8ECF0; --muted: #949CA9;
+    --accent: #3ABDC8; --accent-ink: #03262A; --accent-soft: #12353A; --gold: #F0B04A; --gold-soft: #3A2D16;
+    --good: #48C985; --warn: #E5AE4C; --bad: #F06C6C; --polite: #85A6FF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1215; --surface: #171B20; --surface-2: #20262D; --line: #2C333C; --ink: #E8ECF0; --muted: #949CA9;
+  --accent: #3ABDC8; --accent-ink: #03262A; --accent-soft: #12353A; --gold: #F0B04A; --gold-soft: #3A2D16;
+  --good: #48C985; --warn: #E5AE4C; --bad: #F06C6C; --polite: #85A6FF; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+#app { height: 100%; display: flex; flex-direction: column; }
+#view { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 28px; }
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+h2 { font-size: 1.25rem; font-weight: 800; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.muted { color: var(--muted); font-size: 0.92rem; }
+.small { font-size: 0.82rem; }
+.eyebrow { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.row.between { justify-content: space-between; }
+.row.wrap-ok { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.btn { appearance: none; border: 1px solid transparent; border-radius: 12px; padding: 13px 16px; font: 700 1rem var(--body); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.quiet { background: var(--surface-2); color: var(--ink); }
+.btn.danger { background: var(--bad); color: #fff; }
+.btn.sm { padding: 8px 12px; font-size: 0.9rem; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:focus-visible, .chip:focus-visible, .icon:focus-visible, #tabs button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon { appearance: none; border: 0; background: transparent; color: var(--accent); padding: 6px; border-radius: 999px; cursor: pointer; display: inline-flex; flex: none; }
+.icon svg { width: 22px; height: 22px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chips.wrapping { flex-wrap: wrap; overflow: visible; }
+.chip { appearance: none; flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 13px; font: 700 0.9rem var(--body); cursor: pointer; }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip.alt.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+.bar.gold > i { background: var(--gold); }
+.bar.good > i { background: var(--good); }
+input[type=text], input[type=password], textarea { width: 100%; box-sizing: border-box; font: 1rem var(--body); color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+textarea { resize: none; }
+label.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700; }
+label.toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+.notice { border-left: 0; background: var(--gold-soft); border-color: transparent; }
+.err { color: var(--bad); font-size: 0.92rem; }
+
+/* register meter: polite → crude */
+.reg { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--muted); }
+.reg .dots { display: inline-flex; gap: 2px; }
+.reg .dots i { width: 6px; height: 6px; border-radius: 2px; background: var(--surface-2); border: 1px solid var(--line); }
+.reg .dots i.f { border-color: transparent; background: currentColor; }
+.reg-polite { color: var(--polite); } .reg-neutral { color: var(--muted); } .reg-casual { color: var(--good); } .reg-slang { color: var(--gold); } .reg-crude { color: var(--bad); }
+
+/* today */
+.hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.hero h1 { font-size: clamp(2.8rem, 14vw, 4.2rem); }
+.streak { text-align: right; }
+.streak b { font: 800 2rem/1 var(--display); color: var(--gold); display: block; }
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); cursor: pointer; background: none; border-left: 0; border-right: 0; border-bottom: 0; color: inherit; text-align: left; font: inherit; width: 100%; }
+.step:first-child { border-top: 0; }
+.step .n { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 700 0.95rem var(--mono); background: var(--surface-2); }
+.step.due .n { background: var(--accent); color: var(--accent-ink); }
+.step.done .n { background: var(--good); color: #fff; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.stat b { display: block; font: 700 1.3rem var(--mono); }
+.stat span { font-size: 0.72rem; color: var(--muted); }
+
+/* talk */
+.scen { text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.scen:disabled { opacity: 0.5; cursor: default; }
+.chat { display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 90%; display: flex; flex-direction: column; gap: 6px; }
+.msg.them { align-self: flex-start; }
+.msg.me { align-self: flex-end; align-items: flex-end; }
+.bubble { border-radius: 16px; padding: 12px 14px; min-width: 0; overflow-wrap: anywhere; }
+.them .bubble { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; }
+.me .bubble { background: var(--accent); color: var(--accent-ink); border-top-right-radius: 4px; }
+.target { font-size: 1.2rem; line-height: 1.4; }
+.linkish { appearance: none; background: none; border: 0; padding: 0; color: var(--accent); font: 700 0.88rem var(--body); cursor: pointer; text-align: left; }
+.mine { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--accent-soft); border: 0; border-radius: 12px; padding: 9px 10px; color: var(--ink); font: inherit; cursor: pointer; }
+.mine .plus { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-weight: 800; }
+.mine.added .plus { background: var(--good); color: #fff; }
+.fix { background: var(--gold-soft); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; align-self: stretch; color: var(--ink); }
+.fix .hint { font-weight: 700; color: var(--warn); }
+.composer { position: sticky; bottom: -28px; margin: 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) -28px calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: flex-end; }
+.composer textarea { min-height: 46px; max-height: 120px; }
+.round { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+.round.live { background: var(--bad); color: #fff; }
+.round.off { background: var(--surface-2); color: var(--muted); }
+.round svg { width: 22px; height: 22px; }
+
+/* review */
+.flash { min-height: 230px; justify-content: center; }
+.answer { border-top: 1px dashed var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.answer .target { color: var(--accent); font-size: 1.5rem; font-weight: 700; }
+.prompt { font: 800 1.6rem/1.25 var(--display); }
+.grades { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.grade { appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 10px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; font: 700 0.95rem var(--body); }
+.grade small { font: 500 0.78rem var(--mono); }
+.g1 small { color: var(--bad); } .g2 small { color: var(--warn); } .g3 small { color: var(--good); } .g4 small { color: var(--polite); }
+
+/* phrases */
+.phrase { display: flex; gap: 8px; align-items: flex-start; padding-top: 12px; border-top: 1px solid var(--line); }
+.phrase .t { font-weight: 700; font-size: 1.05rem; }
+details.card { display: block; }
+details.card > * + * { margin-top: 12px; }
+details.pack > summary { list-style: none; cursor: pointer; }
+details.pack > summary::-webkit-details-marker { display: none; }
+.caret { transition: transform 0.15s; color: var(--muted); }
+details[open] .caret { transform: rotate(180deg); }
+
+/* drill */
+.timer { font: 800 clamp(4rem, 26vw, 6.5rem)/1 var(--display); text-align: center; font-variant-numeric: tabular-nums; }
+.timer.live { color: var(--accent); }
+.tg { width: 26px; height: 26px; }
+.grade.right { border: 2px solid var(--good); }
+.grade.wrong { border: 2px solid var(--bad); }
+.tone-opt { padding: 12px 6px; gap: 6px; }
+.sent { appearance: none; border: 0; background: transparent; color: var(--ink); text-align: left; font: inherit; padding: 8px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+.sent.on { background: var(--accent-soft); }
+.sent .target { font-size: 1.15rem; }
+.live-tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 6px; }
+
+#tabs { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line);
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+#tabs button { appearance: none; border: 0; background: none; color: var(--muted); padding: 8px 0 9px; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 700 0.7rem var(--body); cursor: pointer; }
+#tabs button[aria-current="page"] { color: var(--accent); }
+#tabs svg { width: 23px; height: 23px; }
+#tabs .badge { position: absolute; margin-left: 22px; margin-top: -2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 99px; background: var(--bad); color: #fff; font: 700 0.65rem/16px var(--mono); }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 700; max-width: calc(100% - 48px); text-align: center; z-index: 20; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+
+</head>
+<body>
+<div id="app">
+  <main id="view" aria-live="polite"></main>
+  <nav id="tabs" aria-label="Sections">
+    <button data-tab="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Today</button>
+    <button data-tab="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Talk</button>
+    <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg>Review<span class="badge" id="dueBadge" hidden></span></button>
+    <button data-tab="phrases"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>Phrases</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+  </nav>
+</div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const DATA = {"packs": [{"id": "es-core", "lang": "es", "variant": "all", "title": "Keep the conversation alive", "kind": "core", "items": [{"target": "¿Cómo se dice ___ en español?", "meaning": "How do you say ___ in Spanish?", "register": "neutral", "note": "Your most useful sentence. Use it constantly."}, {"target": "¿Me lo repites, por favor?", "meaning": "Can you repeat that, please?", "register": "neutral", "note": "Informal (tú). With strangers use \"¿Me lo repite?\""}, {"target": "Más despacio, por favor.", "meaning": "Slower, please.", "register": "neutral"}, {"target": "No te entendí.", "meaning": "I didn't understand you.", "register": "neutral"}, {"target": "¿Qué significa ___?", "meaning": "What does ___ mean?", "register": "neutral"}, {"target": "O sea…", "meaning": "I mean… / Like…", "register": "casual", "note": "Filler that buys you thinking time."}, {"target": "Bueno…", "meaning": "Well…", "register": "neutral", "note": "Filler to start an answer."}, {"target": "La verdad es que…", "meaning": "Honestly… / The truth is…", "register": "neutral"}, {"target": "Lo que pasa es que…", "meaning": "The thing is…", "register": "neutral", "note": "Great for explaining a problem."}, {"target": "¿En serio?", "meaning": "Seriously? / Really?", "register": "casual"}, {"target": "Ya veo.", "meaning": "I see.", "register": "neutral"}, {"target": "Depende.", "meaning": "It depends.", "register": "neutral"}, {"target": "Me encanta.", "meaning": "I love it.", "register": "neutral"}, {"target": "Tengo ganas de ___.", "meaning": "I feel like ___ / I'm in the mood for ___.", "register": "neutral"}, {"target": "¿Te parece si ___?", "meaning": "How about we ___?", "register": "neutral", "note": "Soft way to suggest a plan."}, {"target": "Quisiera ___.", "meaning": "I'd like ___.", "register": "polite", "note": "Polite way to order."}, {"target": "¿Me trae la cuenta, por favor?", "meaning": "Could you bring me the check, please?", "register": "polite"}, {"target": "¿Dónde queda ___?", "meaning": "Where is ___ (located)?", "register": "neutral"}, {"target": "Por cierto…", "meaning": "By the way…", "register": "neutral"}, {"target": "Igualmente.", "meaning": "Likewise / You too.", "register": "neutral"}, {"target": "¿Y tú?", "meaning": "And you?", "register": "casual", "note": "Bounce the question back to keep things going."}]}, {"id": "es-mx-slang", "lang": "es", "variant": "mx", "title": "Mexico street Spanish", "kind": "slang", "items": [{"target": "¿Qué onda?", "meaning": "What's up?", "register": "casual"}, {"target": "¡Qué padre!", "meaning": "How cool!", "register": "casual"}, {"target": "Está chido.", "meaning": "It's cool.", "register": "slang"}, {"target": "¡No manches!", "meaning": "No way! / You're kidding!", "register": "slang", "note": "Softened version of a cruder phrase. Fine with friends."}, {"target": "¿Neta?", "meaning": "For real?", "register": "slang", "note": "\"La neta\" = honestly / the truth."}, {"target": "Güey", "meaning": "Dude", "register": "slang", "note": "Often written \"wey\". Friendly among friends, rude to strangers."}, {"target": "Ahorita", "meaning": "In a bit (or right now)", "register": "casual", "note": "Famously vague: now, soon, or maybe never."}, {"target": "Me late.", "meaning": "I like it / Sounds good to me.", "register": "slang"}, {"target": "Está cañón.", "meaning": "It's tough / intense.", "register": "slang"}, {"target": "¡Aguas!", "meaning": "Watch out!", "register": "slang"}, {"target": "La chamba", "meaning": "Work / job", "register": "slang"}, {"target": "La lana", "meaning": "Money", "register": "slang"}, {"target": "¿Mande?", "meaning": "Pardon? / Yes?", "register": "polite", "note": "Very Mexican, polite reply when called or when you missed something."}, {"target": "¡Órale!", "meaning": "Whoa! / Alright! / Go for it!", "register": "casual", "note": "Meaning depends on tone."}, {"target": "Fresa", "meaning": "Posh / preppy (person)", "register": "slang"}]}, {"id": "es-es-slang", "lang": "es", "variant": "es", "title": "Spain street Spanish", "kind": "slang", "items": [{"target": "¡Qué guay!", "meaning": "How cool!", "register": "casual"}, {"target": "Tío / Tía", "meaning": "Dude / Girl (friend)", "register": "slang"}, {"target": "Vale.", "meaning": "OK.", "register": "casual"}, {"target": "Me mola.", "meaning": "I like it / It's cool.", "register": "slang"}, {"target": "¡Estoy flipando!", "meaning": "I can't believe it!", "register": "slang"}, {"target": "El curro", "meaning": "Work / job", "register": "slang", "note": "Verb: currar = to work."}, {"target": "La pasta", "meaning": "Money", "register": "slang"}, {"target": "¡Qué fuerte!", "meaning": "Wow, that's crazy!", "register": "casual"}, {"target": "¿Quedamos?", "meaning": "Shall we meet up?", "register": "casual", "note": "Quedar = to arrange to meet."}, {"target": "Me piro.", "meaning": "I'm off / I'm out.", "register": "slang"}, {"target": "Guiri", "meaning": "Foreign tourist", "register": "slang", "note": "Mildly teasing."}, {"target": "Mogollón", "meaning": "Loads / a ton", "register": "slang"}, {"target": "Venga.", "meaning": "Come on / OK then / Bye", "register": "casual", "note": "Used for agreeing and for wrapping up."}]}, {"id": "es-co-slang", "lang": "es", "variant": "co", "title": "Colombia street Spanish", "kind": "slang", "items": [{"target": "¿Qué más?", "meaning": "What's up? / How's it going?", "register": "casual"}, {"target": "Parce / Parcero", "meaning": "Buddy / mate", "register": "slang"}, {"target": "¡Qué chévere!", "meaning": "How cool!", "register": "casual"}, {"target": "Bacano", "meaning": "Awesome", "register": "slang"}, {"target": "Un tinto", "meaning": "A small black coffee", "register": "neutral", "note": "Not red wine like elsewhere!"}, {"target": "No dar papaya", "meaning": "Don't make yourself an easy target", "register": "slang", "note": "Literally \"don't give papaya\": don't flash valuables or be careless."}, {"target": "Qué pena con usted.", "meaning": "I'm so sorry / Excuse me.", "register": "polite", "note": "In Colombia \"qué pena\" often means sorry."}, {"target": "Camellar", "meaning": "To work hard", "register": "slang"}, {"target": "Listo.", "meaning": "OK / Sounds good / Done.", "register": "casual"}]}, {"id": "es-ar-slang", "lang": "es", "variant": "ar", "title": "Argentina street Spanish", "kind": "slang", "items": [{"target": "Che", "meaning": "Hey (to get attention)", "register": "casual"}, {"target": "Boludo / Boluda", "meaning": "Dude (between friends)", "register": "slang", "note": "Affectionate with close friends, an insult to strangers."}, {"target": "Re lindo", "meaning": "Really nice", "register": "slang", "note": "\"Re\" = very, before almost anything."}, {"target": "El laburo", "meaning": "Work / job", "register": "slang"}, {"target": "¡Bárbaro!", "meaning": "Great!", "register": "casual"}, {"target": "Dale.", "meaning": "OK / Sure / Go ahead.", "register": "casual"}, {"target": "¿Todo bien?", "meaning": "All good?", "register": "casual"}, {"target": "Vos tenés…", "meaning": "You have… (vos form)", "register": "neutral", "note": "Argentina uses \"vos\" instead of \"tú\": vos tenés, vos sos."}, {"target": "Un quilombo", "meaning": "A mess / chaos", "register": "slang"}, {"target": "Copado", "meaning": "Cool / nice", "register": "slang"}]}, {"id": "es-pr-slang", "lang": "es", "variant": "pr", "title": "Puerto Rico street Spanish", "kind": "slang", "items": [{"target": "¡Wepa!", "meaning": "Yay! / Woohoo!", "register": "slang"}, {"target": "Janguear", "meaning": "To hang out", "register": "slang", "note": "From English \"hang out\"."}, {"target": "¡Brutal!", "meaning": "Awesome!", "register": "slang"}, {"target": "¿Qué es la que hay?", "meaning": "What's up?", "register": "slang"}, {"target": "Los chavos", "meaning": "Money", "register": "slang"}, {"target": "Bregar", "meaning": "To deal with / handle", "register": "slang", "note": "\"Vamos a bregar\" = we'll deal with it."}, {"target": "Mano", "meaning": "Bro", "register": "slang", "note": "Short for hermano."}]}, {"id": "ja-core", "lang": "ja", "variant": "all", "title": "Keep the conversation alive", "kind": "core", "items": [{"target": "すみません", "meaning": "Excuse me / Sorry / Thanks for the trouble", "register": "polite", "note": "Swiss-army word.", "romanization": "sumimasen"}, {"target": "もう一度お願いします", "meaning": "Once more, please", "register": "polite", "romanization": "mou ichido onegai shimasu"}, {"target": "ゆっくり話してください", "meaning": "Please speak slowly", "register": "polite", "romanization": "yukkuri hanashite kudasai"}, {"target": "〜って何ですか？", "meaning": "What is ~? / What does ~ mean?", "register": "neutral", "romanization": "~tte nan desu ka?"}, {"target": "日本語で何と言いますか？", "meaning": "How do you say it in Japanese?", "register": "polite", "romanization": "nihongo de nan to iimasu ka?"}, {"target": "〜をください", "meaning": "~, please (give me)", "register": "polite", "romanization": "~ o kudasai"}, {"target": "〜はどこですか？", "meaning": "Where is ~?", "register": "polite", "romanization": "~ wa doko desu ka?"}, {"target": "大丈夫です", "meaning": "I'm OK / No thanks, I'm fine", "register": "neutral", "note": "Also a soft \"no thanks\" when offered something.", "romanization": "daijoubu desu"}, {"target": "なるほど", "meaning": "I see / That makes sense", "register": "neutral", "note": "Use sparingly with superiors.", "romanization": "naruhodo"}, {"target": "そうですね", "meaning": "That's right / Let me see…", "register": "neutral", "note": "Also works as a thinking filler.", "romanization": "sou desu ne"}, {"target": "えーと", "meaning": "Um… / Let me think", "register": "neutral", "note": "Filler.", "romanization": "eeto"}, {"target": "ちょっと…", "meaning": "It's a bit… (soft no)", "register": "neutral", "note": "Trailing off = polite refusal.", "romanization": "chotto…"}, {"target": "〜てもいいですか？", "meaning": "May I ~?", "register": "polite", "romanization": "~te mo ii desu ka?"}, {"target": "よろしくお願いします", "meaning": "Nice to meet you / I'm counting on you", "register": "polite", "romanization": "yoroshiku onegai shimasu"}, {"target": "お疲れ様です", "meaning": "Thanks for your hard work (greeting)", "register": "polite", "note": "Standard greeting between coworkers.", "romanization": "otsukaresama desu"}, {"target": "いただきます", "meaning": "(said before eating)", "register": "polite", "romanization": "itadakimasu"}, {"target": "ごちそうさまでした", "meaning": "Thanks for the meal", "register": "polite", "romanization": "gochisousama deshita"}, {"target": "本当に？", "meaning": "Really?", "register": "casual", "romanization": "hontou ni?"}, {"target": "いいね", "meaning": "Nice! / Sounds good", "register": "casual", "romanization": "ii ne"}, {"target": "じゃあね", "meaning": "See ya", "register": "casual", "romanization": "jaa ne"}]}, {"id": "ja-std-slang", "lang": "ja", "variant": "std", "title": "Tokyo casual & slang", "kind": "slang", "items": [{"target": "マジで？", "meaning": "Seriously?", "register": "slang", "romanization": "maji de?"}, {"target": "ヤバい", "meaning": "Crazy! (awesome or terrible)", "register": "slang", "note": "Tone decides: amazing food = yabai, missed train = yabai.", "romanization": "yabai"}, {"target": "めっちゃ", "meaning": "Super / really", "register": "slang", "note": "Kansai origin, now used everywhere.", "romanization": "meccha"}, {"target": "超", "meaning": "Super / ultra", "register": "slang", "romanization": "chou"}, {"target": "ウケる", "meaning": "That's hilarious", "register": "slang", "romanization": "ukeru"}, {"target": "それな", "meaning": "Right?! / Exactly", "register": "slang", "romanization": "sore na"}, {"target": "ガチで", "meaning": "For real", "register": "slang", "romanization": "gachi de"}, {"target": "ぶっちゃけ", "meaning": "To be honest / frankly", "register": "slang", "romanization": "bucchake"}, {"target": "微妙", "meaning": "Meh / iffy", "register": "casual", "romanization": "bimyou"}, {"target": "ウザい", "meaning": "Annoying", "register": "slang", "note": "Don't say it about someone to their face.", "romanization": "uzai"}, {"target": "エモい", "meaning": "Emotional / nostalgic vibe", "register": "slang", "romanization": "emoi"}, {"target": "推し", "meaning": "Your fave (idol, character, player)", "register": "slang", "romanization": "oshi"}, {"target": "草", "meaning": "lol (text)", "register": "slang", "note": "Text only. From ｗｗｗ looking like grass.", "romanization": "kusa"}, {"target": "ドンマイ", "meaning": "Don't worry about it / Shake it off", "register": "casual", "note": "From English \"don't mind\".", "romanization": "donmai"}]}, {"id": "ja-kansai", "lang": "ja", "variant": "kansai", "title": "Kansai-ben (Osaka)", "kind": "slang", "items": [{"target": "おおきに", "meaning": "Thanks", "register": "casual", "romanization": "ookini"}, {"target": "なんでやねん", "meaning": "Why?! / What the heck!", "register": "casual", "note": "The classic comedic comeback.", "romanization": "nande ya nen"}, {"target": "ほんま？", "meaning": "Really?", "register": "casual", "romanization": "honma?"}, {"target": "あかん", "meaning": "No good / Not allowed", "register": "casual", "romanization": "akan"}, {"target": "わからへん", "meaning": "I don't get it", "register": "casual", "note": "〜へん replaces 〜ない for negatives.", "romanization": "wakarahen"}, {"target": "ええやん", "meaning": "That's nice! / Sounds good", "register": "casual", "romanization": "ee yan"}, {"target": "知らんけど", "meaning": "…but who knows", "register": "slang", "note": "Tossed onto the end of any claim as a hedge.", "romanization": "shiran kedo"}, {"target": "めっちゃええ天気や", "meaning": "Really nice weather", "register": "casual", "note": "や replaces だ.", "romanization": "meccha ee tenki ya"}]}, {"id": "ko-core", "lang": "ko", "variant": "all", "title": "Keep the conversation alive", "kind": "core", "items": [{"target": "저기요", "meaning": "Excuse me (to get attention)", "register": "polite", "romanization": "jeogiyo"}, {"target": "다시 한 번 말해 주세요", "meaning": "Please say it once more", "register": "polite", "romanization": "dasi han beon malhae juseyo"}, {"target": "천천히 말해 주세요", "meaning": "Please speak slowly", "register": "polite", "romanization": "cheoncheonhi malhae juseyo"}, {"target": "이게 뭐예요?", "meaning": "What is this?", "register": "polite", "romanization": "ige mwoyeyo?"}, {"target": "한국어로 뭐라고 해요?", "meaning": "How do you say it in Korean?", "register": "polite", "romanization": "hangugeoro mworago haeyo?"}, {"target": "~ 주세요", "meaning": "~, please (give me)", "register": "polite", "romanization": "~ juseyo"}, {"target": "~ 어디예요?", "meaning": "Where is ~?", "register": "polite", "romanization": "~ eodiyeyo?"}, {"target": "괜찮아요", "meaning": "It's OK / I'm fine / No thanks", "register": "polite", "romanization": "gwaenchanayo"}, {"target": "감사합니다", "meaning": "Thank you", "register": "polite", "romanization": "gamsahamnida"}, {"target": "얼마예요?", "meaning": "How much is it?", "register": "polite", "romanization": "eolmayeyo?"}, {"target": "맛있어요", "meaning": "It's delicious", "register": "polite", "romanization": "masisseoyo"}, {"target": "잘 먹겠습니다", "meaning": "(said before eating)", "register": "polite", "romanization": "jal meokgetseumnida"}, {"target": "진짜요?", "meaning": "Really?", "register": "polite", "romanization": "jinjjayo?"}, {"target": "그러니까요", "meaning": "Exactly / That's what I'm saying", "register": "polite", "romanization": "geureonikkayo"}, {"target": "음… 글쎄요", "meaning": "Hmm… well, I'm not sure", "register": "polite", "note": "Soft way to hedge or disagree.", "romanization": "eum… geulsseyo"}, {"target": "아, 그렇구나", "meaning": "Ah, I see", "register": "casual", "romanization": "a, geureokuna"}, {"target": "수고하셨습니다", "meaning": "Thanks for your hard work", "register": "polite", "romanization": "sugohasyeotseumnida"}, {"target": "밥 먹었어?", "meaning": "Have you eaten? (= how are you)", "register": "casual", "romanization": "bap meogeosseo?"}, {"target": "잘 지냈어?", "meaning": "How've you been?", "register": "casual", "romanization": "jal jinaesseo?"}, {"target": "다음에 봐", "meaning": "See you next time", "register": "casual", "romanization": "daeume bwa"}]}, {"id": "ko-slang", "lang": "ko", "variant": "seoul", "title": "Seoul casual & slang", "kind": "slang", "items": [{"target": "대박", "meaning": "Awesome! / Whoa!", "register": "slang", "romanization": "daebak"}, {"target": "헐", "meaning": "OMG / What?!", "register": "slang", "romanization": "heol"}, {"target": "짱", "meaning": "The best", "register": "slang", "romanization": "jjang"}, {"target": "꿀잼 / 노잼", "meaning": "Super fun / Boring", "register": "slang", "romanization": "kkuljaem / nojaem"}, {"target": "멘붕", "meaning": "Mental breakdown / meltdown", "register": "slang", "romanization": "menbung"}, {"target": "치맥", "meaning": "Fried chicken and beer", "register": "slang", "romanization": "chimaek"}, {"target": "불금", "meaning": "TGIF (lit. \"fire Friday\")", "register": "slang", "romanization": "bulgeum"}, {"target": "소확행", "meaning": "Small but certain happiness", "register": "slang", "romanization": "sohwakhaeng"}, {"target": "갑분싸", "meaning": "The mood suddenly got awkward", "register": "slang", "romanization": "gapbunssa"}, {"target": "인싸 / 아싸", "meaning": "Popular insider / Loner outsider", "register": "slang", "romanization": "inssa / assa"}, {"target": "ㅋㅋㅋ", "meaning": "lol (text)", "register": "slang", "note": "Text only.", "romanization": "kkk"}, {"target": "아재개그", "meaning": "Dad joke", "register": "slang", "romanization": "ajae gaegeu"}, {"target": "파이팅!", "meaning": "You got this! / Go for it!", "register": "casual", "romanization": "paiting!"}, {"target": "존맛", "meaning": "Insanely tasty", "register": "crude", "note": "Built on a crude prefix. Close friends only.", "romanization": "jonmat"}, {"target": "오빠 / 언니", "meaning": "Older brother / older sister (said by women)", "register": "neutral", "note": "Women use oppa/eonni; men use hyeong/nuna.", "romanization": "oppa / eonni"}]}, {"id": "zh-core", "lang": "zh", "variant": "all", "title": "Keep the conversation alive", "kind": "core", "items": [{"target": "这个用中文怎么说？", "romanization": "Zhège yòng Zhōngwén zěnme shuō?", "meaning": "How do you say this in Chinese?", "register": "neutral", "note": "Your most useful sentence."}, {"target": "你能再说一遍吗？", "romanization": "Nǐ néng zài shuō yí biàn ma?", "meaning": "Can you say that again?", "register": "neutral", "note": "一 becomes yí before a 4th tone."}, {"target": "请说慢一点。", "romanization": "Qǐng shuō màn yìdiǎn.", "meaning": "Please speak a bit slower.", "register": "polite"}, {"target": "我没听懂。", "romanization": "Wǒ méi tīng dǒng.", "meaning": "I didn't catch that.", "register": "neutral"}, {"target": "___是什么意思？", "romanization": "___ shì shénme yìsi?", "meaning": "What does ___ mean?", "register": "neutral"}, {"target": "那个……", "romanization": "nèige…", "meaning": "Um… (filler while you think)", "register": "casual", "note": "The classic Mandarin filler. Use it instead of going silent."}, {"target": "怎么说呢……", "romanization": "zěnme shuō ne…", "meaning": "How should I put it…", "register": "casual"}, {"target": "就是说……", "romanization": "jiùshì shuō…", "meaning": "I mean… / That is…", "register": "casual"}, {"target": "真的假的？", "romanization": "Zhēn de jiǎ de?", "meaning": "For real? / No way!", "register": "casual"}, {"target": "对对对", "romanization": "duì duì duì", "meaning": "Yeah yeah, exactly", "register": "casual"}, {"target": "行 / 好的", "romanization": "xíng / hǎo de", "meaning": "OK / Sure", "register": "neutral"}, {"target": "没问题", "romanization": "méi wèntí", "meaning": "No problem", "register": "neutral"}, {"target": "没事儿", "romanization": "méishìr", "meaning": "It's fine / No worries", "register": "casual", "note": "The 儿 ending is very northern."}, {"target": "不好意思", "romanization": "bù hǎoyìsi", "meaning": "Sorry / Excuse me", "register": "polite", "note": "Lighter than 对不起. Use it for small things."}, {"target": "我想要……", "romanization": "wǒ xiǎng yào…", "meaning": "I'd like…", "register": "neutral"}, {"target": "这个多少钱？", "romanization": "Zhège duōshao qián?", "meaning": "How much is this?", "register": "neutral"}, {"target": "买单！", "romanization": "Mǎidān!", "meaning": "Check, please!", "register": "casual"}, {"target": "你呢？", "romanization": "Nǐ ne?", "meaning": "And you?", "register": "casual", "note": "Bounce the question back to keep things going."}, {"target": "我觉得……", "romanization": "wǒ juéde…", "meaning": "I think…", "register": "neutral"}, {"target": "随便", "romanization": "suíbiàn", "meaning": "Whatever / Up to you", "register": "casual"}, {"target": "加个微信吧", "romanization": "jiā ge Wēixìn ba", "meaning": "Let's add each other on WeChat", "register": "casual"}, {"target": "吃了吗？", "romanization": "Chī le ma?", "meaning": "Eaten yet? (casual hello)", "register": "casual"}]}, {"id": "zh-gaming", "lang": "zh", "variant": "all", "title": "Gaming talk", "kind": "slang", "items": [{"target": "开黑", "romanization": "kāihēi", "meaning": "Queue up with friends (on voice)", "register": "slang", "note": "来开黑吗？ = Wanna run some games?"}, {"target": "带飞", "romanization": "dàifēi", "meaning": "To carry (a team or player)", "register": "slang"}, {"target": "坑队友", "romanization": "kēng duìyǒu", "meaning": "Teammate who drags the team down / to throw", "register": "slang", "note": "你好坑啊 = You're throwing."}, {"target": "菜 / 菜鸡", "romanization": "cài / càijī", "meaning": "Bad (at the game) / noob", "register": "slang", "note": "我太菜了 is the standard self-roast."}, {"target": "大神", "romanization": "dàshén", "meaning": "Pro / cracked player", "register": "slang"}, {"target": "666", "romanization": "liù liù liù", "meaning": "Nice! / Sick play", "register": "slang", "note": "Typed or said. 六 sounds like 溜 (smooth)."}, {"target": "秀操作", "romanization": "xiù cāozuò", "meaning": "Show off a slick play", "register": "slang", "note": "太秀了 = That was so clean."}, {"target": "上分 / 掉分", "romanization": "shàngfēn / diàofēn", "meaning": "Climb rank / lose rank points", "register": "slang"}, {"target": "送人头", "romanization": "sòng réntóu", "meaning": "To feed (keep dying)", "register": "slang"}, {"target": "开挂", "romanization": "kāiguà", "meaning": "To cheat / hack", "register": "slang", "note": "外挂 wàiguà = cheat software. 他开挂了吧？ = He's gotta be hacking."}, {"target": "红温", "romanization": "hóngwēn", "meaning": "Tilted / raging", "register": "slang", "note": "Started in League of Legends culture: face turns red-hot."}, {"target": "下饭", "romanization": "xiàfàn", "meaning": "So bad it's entertaining", "register": "slang", "note": "Lit. 'goes well with rice'. 下饭操作 = a play bad enough to laugh at over dinner."}, {"target": "稳住", "romanization": "wěnzhù", "meaning": "Stay calm / hold steady", "register": "casual"}, {"target": "我的锅", "romanization": "wǒ de guō", "meaning": "My bad", "register": "slang", "note": "背锅 bēiguō = take the blame."}, {"target": "再来一把", "romanization": "zài lái yì bǎ", "meaning": "One more game", "register": "casual"}, {"target": "吃鸡", "romanization": "chījī", "meaning": "Win the match (battle royale)", "register": "slang", "note": "From 'winner winner chicken dinner'."}]}, {"id": "zh-net", "lang": "zh", "variant": "all", "title": "Internet talk everyone knows", "kind": "slang", "items": [{"target": "牛", "romanization": "niú", "meaning": "Awesome / impressive", "register": "casual", "note": "牛逼 niúbī is the crude version, very common among friends."}, {"target": "绝了", "romanization": "jué le", "meaning": "Unreal / incredible", "register": "slang"}, {"target": "离谱", "romanization": "lípǔ", "meaning": "Ridiculous / way out of line", "register": "casual"}, {"target": "上头", "romanization": "shàngtóu", "meaning": "Hooked / can't stop", "register": "slang"}, {"target": "躺平", "romanization": "tǎngpíng", "meaning": "Opt out of the grind", "register": "slang"}, {"target": "内卷", "romanization": "nèijuǎn", "meaning": "Pointless over-competition", "register": "slang"}, {"target": "摆烂", "romanization": "bǎilàn", "meaning": "Give up and let it rot", "register": "slang"}, {"target": "破防", "romanization": "pòfáng", "meaning": "Emotionally wrecked / hit hard", "register": "slang", "note": "Gaming origin: your defense is broken."}, {"target": "社恐 / 社牛", "romanization": "shèkǒng / shèniú", "meaning": "Socially anxious / socially fearless", "register": "slang"}, {"target": "打工人", "romanization": "dǎgōngrén", "meaning": "Wage worker (self-deprecating)", "register": "slang"}, {"target": "牛马", "romanization": "niúmǎ", "meaning": "Overworked drudge", "register": "slang", "note": "Workers call themselves this jokingly."}, {"target": "班味", "romanization": "bānwèi", "meaning": "That drained office-worker vibe", "register": "slang"}, {"target": "吃瓜", "romanization": "chīguā", "meaning": "Watch the drama unfold", "register": "slang", "note": "吃瓜群众 = the bystanders with popcorn."}, {"target": "凡尔赛", "romanization": "fán'ěrsài", "meaning": "Humblebrag", "register": "slang"}, {"target": "搞抽象", "romanization": "gǎo chōuxiàng", "meaning": "Doing something deliberately absurd", "register": "slang", "note": "Streamer-culture origin. 好抽象 = so weird."}, {"target": "草台班子", "romanization": "cǎotái bānzi", "meaning": "Amateur-hour operation", "register": "casual"}, {"target": "难绷", "romanization": "nán bēng", "meaning": "Hard to keep a straight face", "register": "slang"}, {"target": "割韭菜", "romanization": "gē jiǔcài", "meaning": "Fleece small investors or customers", "register": "slang", "note": "Lit. 'cut chives' — they grow back to be cut again."}, {"target": "薅羊毛", "romanization": "hāo yángmáo", "meaning": "Snag deals and freebies", "register": "slang"}, {"target": "yyds", "romanization": "yǒngyuǎn de shén", "meaning": "GOAT (greatest of all time)", "register": "slang", "note": "Peaked around 2021. Still understood, slightly dated."}]}, {"id": "zh-bj", "lang": "zh", "variant": "bj", "title": "Beijing flavor", "kind": "slang", "items": [{"target": "嘛呢？", "romanization": "Má ne?", "meaning": "Whatcha doing?", "register": "casual", "note": "Beijing shortening of 干嘛呢."}, {"target": "倍儿棒", "romanization": "bèir bàng", "meaning": "Really great", "register": "slang", "note": "倍儿 = super, very."}, {"target": "您", "romanization": "nín", "meaning": "You (respectful)", "register": "polite", "note": "Beijingers use 您 far more than southerners."}, {"target": "甭", "romanization": "béng", "meaning": "No need to / don't", "register": "casual", "note": "Merged from 不用. 甭客气 = don't mention it."}, {"target": "颠儿了", "romanization": "diānr le", "meaning": "Took off / bailed", "register": "slang"}, {"target": "局气", "romanization": "júqi", "meaning": "Stand-up, generous (person)", "register": "slang"}, {"target": "瓷器", "romanization": "cíqi", "meaning": "Tight buddy", "register": "slang"}, {"target": "搓一顿", "romanization": "cuō yí dùn", "meaning": "Go have a big meal", "register": "slang"}, {"target": "劳驾", "romanization": "láojià", "meaning": "Excuse me (asking a favor)", "register": "polite"}]}], "langs": [{"code": "es", "name": "Spanish", "nativeName": "Español", "romanize": false, "builtIn": true, "variants": [{"id": "mx", "label": "Mexico", "ttsLocale": "es-MX", "sttLocale": "es-MX"}, {"id": "es", "label": "Spain", "ttsLocale": "es-ES", "sttLocale": "es-ES"}, {"id": "co", "label": "Colombia", "ttsLocale": "es-CO", "sttLocale": "es-CO"}, {"id": "ar", "label": "Argentina", "ttsLocale": "es-AR", "sttLocale": "es-AR"}, {"id": "pr", "label": "Puerto Rico", "ttsLocale": "es-US", "sttLocale": "es-US"}]}, {"code": "ja", "name": "Japanese", "nativeName": "日本語", "romanize": true, "builtIn": true, "variants": [{"id": "std", "label": "Tokyo / Standard", "ttsLocale": "ja-JP", "sttLocale": "ja-JP"}, {"id": "kansai", "label": "Kansai (Osaka)", "ttsLocale": "ja-JP", "sttLocale": "ja-JP"}]}, {"code": "ko", "name": "Korean", "nativeName": "한국어", "romanize": true, "builtIn": true, "variants": [{"id": "seoul", "label": "Seoul / Standard", "ttsLocale": "ko-KR", "sttLocale": "ko-KR"}]}, {"code": "zh", "name": "Mandarin", "nativeName": "中文", "romanize": true, "builtIn": true, "variants": [{"id": "cn", "label": "Mainland (Standard)", "ttsLocale": "zh-CN", "sttLocale": "zh-CN"}, {"id": "bj", "label": "Beijing", "ttsLocale": "zh-CN", "sttLocale": "zh-CN"}]}], "scenarios": [{"id": "meet", "title": "Meet someone new", "emoji": "👋", "brief": "You just met the learner at a party. Swap names, where you are from, what you do. Ask follow-up questions."}, {"id": "food", "title": "Order food", "emoji": "🌮", "brief": "You run a busy local food spot. Take the learner's order, suggest a local favorite, handle a change to the order, and the bill."}, {"id": "plans", "title": "Make weekend plans", "emoji": "📅", "brief": "You are the learner's friend. Make plans for the weekend: pick an activity, a time, and a place to meet. Push back once so they have to negotiate."}, {"id": "directions", "title": "Get unstuck in the city", "emoji": "🚇", "brief": "The learner is lost and asks you, a local, for directions and transit help. Give realistic directions with landmarks."}, {"id": "banter", "title": "Banter & react", "emoji": "😂", "brief": "Casual chat between friends. Tell short surprising stories and gossip so the learner practices reacting with natural slang and interjections."}, {"id": "story", "title": "What did you do?", "emoji": "🗓️", "brief": "Ask the learner what they did yesterday and last weekend. Keep them narrating in the past tense with follow-up questions."}, {"id": "games", "title": "Talk games & hobbies", "emoji": "🎮", "brief": "Chat about games, esports, streaming and hobbies. Ask for opinions and reasons, and disagree playfully sometimes."}, {"id": "free", "title": "Free talk", "emoji": "💬", "brief": "Open conversation. Follow the learner's lead and keep them talking."}], "topics": ["Describe a normal day for you, from waking up to going to bed.", "Talk about your favorite game and why you like it.", "Describe the town where you grew up.", "A trip you would love to take, and what you would do there.", "Something that annoyed you this week.", "Explain your job or project to a friend.", "Your favorite food and how it is made.", "The best weekend you have had recently.", "Describe your favorite game to a friend who has never played it.", "Tell a friend about your cats."], "toneWords": [["飞机", "fēijī", "airplane", "11"], ["今天", "jīntiān", "today", "11"], ["中国", "Zhōngguó", "China", "12"], ["欢迎", "huānyíng", "welcome", "12"], ["铅笔", "qiānbǐ", "pencil", "13"], ["开始", "kāishǐ", "begin", "13"], ["工作", "gōngzuò", "work", "14"], ["音乐", "yīnyuè", "music", "14"], ["明天", "míngtiān", "tomorrow", "21"], ["昨天", "zuótiān", "yesterday", "21"], ["学习", "xuéxí", "study", "22"], ["银行", "yínháng", "bank", "22"], ["苹果", "píngguǒ", "apple", "23"], ["没有", "méiyǒu", "don't have", "23"], ["学校", "xuéxiào", "school", "24"], ["同事", "tóngshì", "coworker", "24"], ["老师", "lǎoshī", "teacher", "31"], ["手机", "shǒujī", "cell phone", "31"], ["美国", "Měiguó", "USA", "32"], ["旅游", "lǚyóu", "travel", "32"], ["考试", "kǎoshì", "exam", "34"], ["可爱", "kě'ài", "cute", "34"], ["面包", "miànbāo", "bread", "41"], ["汽车", "qìchē", "car", "41"], ["问题", "wèntí", "question", "42"], ["大学", "dàxué", "university", "42"], ["电脑", "diànnǎo", "computer", "43"], ["外语", "wàiyǔ", "foreign language", "43"], ["再见", "zàijiàn", "goodbye", "44"], ["电话", "diànhuà", "phone call", "44"], ["妈妈", "māma", "mom", "10"], ["东西", "dōngxi", "thing", "10"], ["朋友", "péngyou", "friend", "20"], ["时候", "shíhou", "time, moment", "20"], ["喜欢", "xǐhuan", "to like", "30"], ["姐姐", "jiějie", "older sister", "30"], ["谢谢", "xièxie", "thanks", "40"], ["弟弟", "dìdi", "younger brother", "40"], ["咖啡", "kāfēi", "coffee", "11"], ["星期", "xīngqī", "week", "11"], ["安全", "ānquán", "safe", "12"], ["新闻", "xīnwén", "news", "12"], ["身体", "shēntǐ", "body", "13"], ["发展", "fāzhǎn", "develop", "13"], ["方便", "fāngbiàn", "convenient", "14"], ["医院", "yīyuàn", "hospital", "14"], ["国家", "guójiā", "country", "21"], ["时间", "shíjiān", "time", "21"], ["回答", "huídá", "answer", "22"], ["人民", "rénmín", "the people", "22"], ["牛奶", "niúnǎi", "milk", "23"], ["词典", "cídiǎn", "dictionary", "23"], ["成绩", "chéngjì", "grades, results", "24"], ["文化", "wénhuà", "culture", "24"], ["北京", "Běijīng", "Beijing", "31"], ["首都", "shǒudū", "capital city", "31"], ["很忙", "hěn máng", "very busy", "32"], ["语言", "yǔyán", "language", "32"], ["比赛", "bǐsài", "match, competition", "34"], ["礼物", "lǐwù", "gift", "34"], ["上班", "shàngbān", "go to work", "41"], ["大家", "dàjiā", "everyone", "41"], ["练习", "liànxí", "practice", "42"], ["地图", "dìtú", "map", "42"], ["跳舞", "tiàowǔ", "dance", "43"], ["报纸", "bàozhǐ", "newspaper", "43"], ["现在", "xiànzài", "now", "44"], ["运动", "yùndòng", "exercise, sports", "44"], ["桌子", "zhuōzi", "table", "10"], ["孩子", "háizi", "child", "20"], ["早上", "zǎoshang", "morning", "30"], ["意思", "yìsi", "meaning", "40"]], "singleWords": [["妈", "mā", "mom", "1"], ["麻", "má", "numb", "2"], ["马", "mǎ", "horse", "3"], ["骂", "mà", "scold", "4"], ["八", "bā", "eight", "1"], ["拔", "bá", "pull out", "2"], ["把", "bǎ", "handle; hold", "3"], ["爸", "bà", "dad", "4"], ["衣", "yī", "clothing", "1"], ["姨", "yí", "aunt", "2"], ["椅", "yǐ", "chair", "3"], ["意", "yì", "meaning", "4"], ["汤", "tāng", "soup", "1"], ["糖", "táng", "sugar", "2"], ["躺", "tǎng", "lie down", "3"], ["烫", "tàng", "scalding", "4"], ["书", "shū", "book", "1"], ["熟", "shú", "ripe; familiar", "2"], ["鼠", "shǔ", "mouse", "3"], ["树", "shù", "tree", "4"]]};
+const PACKS = DATA.packs, BUILTIN_LANGS = DATA.langs, SCENARIOS = DATA.scenarios, DRILL_TOPICS = DATA.topics;
+const TODAY_WORD = { es: "Hoy", ja: "今日", ko: "오늘", zh: "今天" };
+const TONE_WORDS = DATA.toneWords || [];
+const SINGLE_WORDS = DATA.singleWords || [];
+const TONE_LAB_DEFAULT = "https://wkeylive-eng.github.io/parley/tonelab.html";
+const STORY_TOPICS = ["a ranked match that went wrong", "a night of streaming", "two cats causing chaos at home", "a deal at a scrap metal yard", "weekend plans with friends", "ordering food late at night", "a trip to a new city", "a funny misunderstanding at work", "learning a new game", "a rainy day at home"];
+const TONE_PATTERNS = ["11", "12", "13", "14", "21", "22", "23", "24", "31", "32", "34", "41", "42", "43", "44", "10", "20", "30", "40"];
+const REG_ORDER = ["polite", "neutral", "casual", "slang", "crude"];
+const DAY = 86400000, MIN = 60000;
+
+// ───────── utilities ─────────
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const dayKey = (t = Date.now()) => { const d = new Date(t); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2800); }
+const SVG = {
+  speak: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9a4 4 0 0 1 0 6M19.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  caret: '<svg class="caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>',
+};
+
+// ───────── scheduler (FSRS-5 style) ─────────
+const W = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192, 1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898, 0.51655, 0.6621];
+const DECAY = -0.5, FACTOR = 19 / 81, RETAIN = 0.9;
+const clampD = (d) => Math.min(10, Math.max(1, d));
+const newSrs = (now = Date.now()) => ({ state: "new", stability: 0, difficulty: 0, due: now, lastReview: null, reps: 0, lapses: 0 });
+const retr = (t, s) => (s <= 0 ? 0 : Math.pow(1 + (FACTOR * t) / s, DECAY));
+const ivl = (s) => Math.min(3650, Math.max(1, Math.round((s / FACTOR) * (Math.pow(RETAIN, 1 / DECAY) - 1))));
+const initD = (g) => clampD(W[4] - Math.exp(W[5] * (g - 1)) + 1);
+const initS = (g) => Math.max(0.1, W[g - 1]);
+const nextD = (d, g) => { const dp = d + (-W[6] * (g - 3) * (10 - d)) / 9; return clampD(W[7] * initD(4) + (1 - W[7]) * dp); };
+const recallS = (d, s, r, g) => s * (1 + Math.exp(W[8]) * (11 - d) * Math.pow(s, -W[9]) * Math.expm1(W[10] * (1 - r)) * (g === 2 ? W[15] : 1) * (g === 4 ? W[16] : 1));
+const forgetS = (d, s, r) => Math.min(s, W[11] * Math.pow(d, -W[12]) * (Math.pow(s + 1, W[13]) - 1) * Math.exp(W[14] * (1 - r)));
+const shortS = (s, g) => s * Math.exp(W[17] * (g - 3 + W[18]));
+function schedule(p, g, now = Date.now()) {
+  const n = { ...p, reps: p.reps + 1, lastReview: now };
+  if (p.state === "new") {
+    n.difficulty = initD(g); n.stability = initS(g);
+    if (g === 4) { n.state = "review"; n.due = now + ivl(n.stability) * DAY; }
+    else { n.state = "learning"; n.due = now + (g === 1 ? 1 : g === 2 ? 5 : 10) * MIN; }
+    return n;
+  }
+  if (p.state === "learning" || p.state === "relearning") {
+    n.difficulty = nextD(p.difficulty, g); n.stability = shortS(p.stability, g);
+    if (g === 1) n.due = now + MIN; else if (g === 2) n.due = now + 5 * MIN;
+    else { n.state = "review"; n.due = now + ivl(n.stability) * DAY; }
+    return n;
+  }
+  const el = Math.max(0, (now - (p.lastReview ?? now)) / DAY), r = retr(el, p.stability);
+  n.difficulty = nextD(p.difficulty, g);
+  if (g === 1) { n.stability = forgetS(p.difficulty, p.stability, r); n.lapses = p.lapses + 1; n.state = "relearning"; n.due = now + 10 * MIN; return n; }
+  n.stability = recallS(p.difficulty, p.stability, r, g);
+  let days = ivl(n.stability);
+  if (g === 2) days = Math.max(1, Math.min(days, Math.round(el * 1.2) || 1));
+  n.due = now + days * DAY;
+  return n;
+}
+function fmtIvl(ms) {
+  const m = ms / MIN; if (m < 60) return Math.max(1, Math.round(m)) + "m";
+  const h = m / 60; if (h < 24) return Math.round(h) + "h";
+  const d = h / 24; if (d < 30) return Math.round(d) + "d";
+  if (d < 365) return Math.round(d / 30) + "mo"; return (d / 365).toFixed(1) + "y";
+}
+
+// ───────── state ─────────
+const KEY_STATE = "parley-web-v1", KEY_API = "parley-api-key";
+const DEFAULT = () => ({
+  v: 1, savedAt: 0, currentLang: "es", variantByLang: { es: "mx", ja: "std", ko: "seoul", zh: "cn" }, customLanguages: [], customPacks: [], toneStats: {}, lastStory: {}, corePath: {},
+  cards: {}, newToday: { day: "", count: 0 }, xp: 0, dailyXp: { day: "", xp: 0 }, streak: { count: 0, lastDay: null, best: 0 },
+  stats: { reviews: 0, turns: 0, drillRounds: 0, mined: 0, speakingSeconds: 0 },
+  settings: { model: "claude-haiku-5-5", level: "beginner", formality: "casual", dailyGoal: 100, newPerDay: 15, autoSpeak: true, rate: 0.9, toneLabUrl: TONE_LAB_DEFAULT },
+});
+function migrate(x) {
+  const d = DEFAULT();
+  const settings = { ...d.settings, ...(x.settings || {}) }; if (!settings.toneLabUrl) settings.toneLabUrl = TONE_LAB_DEFAULT;
+  return { ...d, ...x, settings, stats: { ...d.stats, ...(x.stats || {}) }, streak: { ...d.streak, ...(x.streak || {}) },
+    variantByLang: { ...d.variantByLang, ...(x.variantByLang || {}) }, cards: x.cards || {}, customLanguages: x.customLanguages || [], customPacks: x.customPacks || [], toneStats: x.toneStats || {}, lastStory: x.lastStory || {}, corePath: x.corePath || {} };
+}
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const lsDel = (k) => { try { localStorage.removeItem(k); } catch {} };
+let S = (() => { try { const r = lsGet(KEY_STATE); return r ? migrate(JSON.parse(r)) : DEFAULT(); } catch { return DEFAULT(); } })();
+let dbRef = null, dbTimer = null;
+function save() {
+  S.savedAt = Date.now();
+  const json = JSON.stringify(S);
+  lsSet(KEY_STATE, json);
+  if (dbRef) { clearTimeout(dbTimer); dbTimer = setTimeout(() => { if (json.length < 240000) dbRef.set({ json, savedAt: S.savedAt }).catch(() => {}); }, 2000); }
+  updateBadge();
+}
+
+const allLangs = () => [...BUILTIN_LANGS, ...S.customLanguages];
+function cur() {
+  const ls = allLangs(); const lang = ls.find((l) => l.code === S.currentLang) || ls[0];
+  const variant = lang.variants.find((v) => v.id === S.variantByLang[lang.code]) || lang.variants[0];
+  return { lang, variant };
+}
+let LIVE = { items: [], meta: null };
+function livePacks() {
+  const valid = LIVE.items.filter((d) => d.term && d.meaning);
+  if (!valid.length) return [];
+  const week = LIVE.meta && LIVE.meta.lastWeek;
+  const toItem = (d) => ({
+    target: String(d.term), romanization: d.pinyin ? String(d.pinyin) : undefined, meaning: String(d.meaning),
+    register: REG_ORDER.includes(d.register) ? d.register : "slang",
+    note: [d.note, d.example ? `${d.example}${d.examplePinyin ? " (" + d.examplePinyin + ")" : ""}${d.exampleEn ? " = " + d.exampleEn : ""}` : ""].filter(Boolean).map(String).join(" · ") || undefined,
+  });
+  const fresh = valid.filter((d) => week && d.week === week);
+  const rest = valid.filter((d) => !(week && d.week === week) && d.status !== "dated").sort((a, b) => String(b.week || "").localeCompare(String(a.week || "")));
+  const when = LIVE.meta && LIVE.meta.lastRun ? new Date(LIVE.meta.lastRun).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
+  const out = [];
+  if (fresh.length) out.push({ id: "live-week", lang: "zh", variant: "all", title: `This week's slang${when ? " · " + when : ""}`, kind: "live", items: fresh.map(toItem) });
+  if (rest.length) out.push({ id: "live-all", lang: "zh", variant: "all", title: "Slang from earlier weeks", kind: "live", items: rest.map(toItem) });
+  return out;
+}
+const packsFor = (code) => [...(code === "zh" ? livePacks() : []), ...S.customPacks.filter((p) => p.lang === code), ...PACKS.filter((p) => p.lang === code)];
+const norm = (s) => String(s).trim().toLowerCase();
+
+const XP = { review: { 1: 2, 2: 4, 3: 6, 4: 6 }, talkSpoken: 10, talkTyped: 6, drillRound: 15, mine: 3 };
+function addXp(n) {
+  const t = dayKey(), y = dayKey(Date.now() - DAY), st = S.streak;
+  if (st.lastDay !== t) { st.count = st.lastDay === y ? st.count + 1 : 1; st.lastDay = t; st.best = Math.max(st.best, st.count); }
+  S.dailyXp = { day: t, xp: (S.dailyXp.day === t ? S.dailyXp.xp : 0) + n };
+  S.xp += n;
+}
+function levelInfo(xp) {
+  const level = Math.floor((1 + Math.sqrt(1 + (4 * xp) / 50)) / 2), lo = 50 * level * (level - 1), hi = 50 * (level + 1) * level;
+  return { level, progress: (xp - lo) / (hi - lo), toNext: hi - xp };
+}
+const streakNow = () => (S.streak.lastDay === dayKey() || S.streak.lastDay === dayKey(Date.now() - DAY) ? S.streak.count : 0);
+const todayXp = () => (S.dailyXp.day === dayKey() ? S.dailyXp.xp : 0);
+
+function addCards(items, langCode, variantId, source) {
+  const seen = new Set(Object.values(S.cards).filter((c) => c.lang === langCode).map((c) => norm(c.target)));
+  const now = Date.now(); let n = 0;
+  items.forEach((it, i) => {
+    const k = norm(it.target); if (!k || seen.has(k)) return; seen.add(k);
+    const id = langCode + "-" + now.toString(36) + "-" + i + "-" + Math.random().toString(36).slice(2, 6);
+    S.cards[id] = { target: it.target, romanization: it.romanization, meaning: it.meaning, register: it.register || "neutral", note: it.note,
+      id, lang: langCode, variant: variantId, source, createdAt: now + i, srs: newSrs(now) };
+    n++;
+  });
+  if (n && (source === "chat" || source === "drill")) { S.stats.mined += n; addXp(n * XP.mine); }
+  if (n) save();
+  return n;
+}
+function dueCards(code, now = Date.now()) {
+  const mine = Object.values(S.cards).filter((c) => c.lang === code);
+  const reviews = mine.filter((c) => c.srs.state !== "new" && c.srs.due <= now).sort((a, b) => a.srs.due - b.srs.due);
+  const used = S.newToday.day === dayKey(now) ? S.newToday.count : 0;
+  const pri = (c) => (String(c.source || "").startsWith("live-") ? 1 : 0);
+  const fresh = mine.filter((c) => c.srs.state === "new").sort((a, b) => pri(a) - pri(b) || a.createdAt - b.createdAt).slice(0, Math.max(0, S.settings.newPerDay - used));
+  return [...reviews, ...fresh];
+}
+function updateBadge() {
+  const b = $("#dueBadge"); if (!b) return;
+  const n = dueCards(cur().lang.code).length; b.hidden = !n; b.textContent = n > 99 ? "99+" : String(n);
+}
+
+// ───────── speech ─────────
+const synth = window.speechSynthesis;
+let voices = [];
+const loadVoices = () => { try { voices = synth ? synth.getVoices() : []; } catch {} };
+loadVoices(); if (synth) synth.onvoiceschanged = loadVoices;
+function pickVoice(locale) {
+  const L = locale.toLowerCase(), base = L.split("-")[0];
+  const exact = voices.filter((v) => v.lang.toLowerCase().replace("_", "-") === L);
+  const pool = exact.length ? exact : voices.filter((v) => v.lang.toLowerCase().startsWith(base));
+  return pool.find((v) => /premium/i.test(v.name)) || pool.find((v) => /enhanced/i.test(v.name)) || pool[0] || null;
+}
+const cleanSpeech = (t) => String(t).replace(/___|~|〜/g, " ").replace(/\s+/g, " ").trim();
+function speak(text, locale, rate = S.settings.rate, onend) {
+  if (!synth || !text) return;
+  try {
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(cleanSpeech(text));
+    u.lang = locale; const v = pickVoice(locale); if (v) u.voice = v; u.rate = rate;
+    if (onend) u.onend = onend;
+    synth.speak(u);
+  } catch {}
+}
+function speakVaried(text, locale) {
+  if (!synth) return;
+  try {
+    synth.cancel();
+    const L = locale.toLowerCase();
+    const pool = voices.filter((v) => v.lang.toLowerCase().replace("_", "-") === L);
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = locale; if (pool.length) u.voice = pool[Math.floor(Math.random() * pool.length)];
+    u.rate = 0.75 + Math.random() * 0.25;
+    u.pitch = 0.75 + Math.random() * 0.5;
+    synth.speak(u);
+  } catch {}
+}
+const shadow = (text, locale) => { const r = S.settings.rate * 0.92; speak(text, locale, r, () => setTimeout(() => speak(text, locale, r), 900)); };
+
+// Speech recognition: Safari tabs only (not Home Screen apps, not inside the Claude viewer).
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const STANDALONE = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+let srOK = !!SR && !STANDALONE;
+let rec = null;
+function listen({ lang, continuous = false, onText, onEnd }) {
+  if (!srOK) return false;
+  try {
+    stopListening();
+    const r = new SR(); r.lang = lang; r.interimResults = true; r.continuous = continuous;
+    const t0 = Date.now(); let last = "";
+    r.onresult = (e) => { last = Array.from(e.results).map((x) => x[0].transcript).join(" ").replace(/\s+/g, " ").trim(); onText && onText(last); };
+    r.onerror = (e) => {
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(e.error)) {
+        srOK = false; toast("The microphone isn't available here. Use the mic key on your keyboard instead."); render();
+      }
+    };
+    r.onend = () => { rec = null; S.stats.speakingSeconds += Math.round((Date.now() - t0) / 1000); save(); onEnd && onEnd(last); };
+    rec = r; r.start(); return true;
+  } catch { srOK = false; return false; }
+}
+function stopListening() { if (rec) { try { rec.stop(); } catch {} } }
+function matchScore(said, target) {
+  const strip = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").normalize("NFC").replace(/[\s\p{P}\p{S}~〜_]/gu, "");
+  const a = strip(said), b = strip(target); if (!a || !b) return 0;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) { const c = [i]; for (let j = 1; j <= b.length; j++) c[j] = Math.min(prev[j] + 1, c[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = c; }
+  return Math.max(0, Math.round((1 - prev[b.length] / Math.max(a.length, b.length)) * 100));
+}
+function countWords(t) {
+  t = t.trim(); if (!t) return 0;
+  const cjk = (t.match(/[぀-ヿ一-鿿]/g) || []).length;
+  return cjk > t.length / 3 ? Math.round(cjk / 2) : t.split(/\s+/).length;
+}
+
+// ───────── Claude ─────────
+// Inside the Claude app the page asks Claude on your own account (no key).
+// Anywhere else (your Home Screen) it calls the Anthropic API with your key.
+let SAMPLER = null, samplerKnown = !(window.claude && typeof window.claude.use === "function");
+const samplerP = samplerKnown ? Promise.resolve(null) : window.claude.use("sample").catch(() => null);
+samplerP.then((s) => { SAMPLER = s; samplerKnown = true; render(); });
+const getKey = () => lsGet(KEY_API) || "";
+const aiReady = () => !!SAMPLER || !!getKey();
+const SAMPLE_ERR = {
+  not_granted: "Claude wasn't allowed for this page. Reload it to be asked again.",
+  sampling_disabled: "Claude isn't available on this account.",
+  rate_limited: "Too many requests just now. Wait a minute and try again.",
+  session_expired: "Sign in to Claude again, then try again.",
+  refused: "Claude declined that one. Try rephrasing.",
+  invalid_json: "The reply came back garbled. Try again.",
+  empty_completion: "Claude sent an empty reply. Try again.",
+};
+function extractJson(text) {
+  const c = text.replace(/```(?:json)?/g, "").trim(); const s = c.search(/[\[{]/);
+  if (s < 0) throw new Error("The reply had no data in it. Try again.");
+  const close = c[s] === "{" ? "}" : "]";
+  return JSON.parse(c.slice(s, c.lastIndexOf(close) + 1));
+}
+async function aiJSON(system, turns, maxTokens = 900) {
+  if (!samplerKnown) await samplerP;
+  if (SAMPLER) {
+    try {
+      return await SAMPLER.json([{ role: "user", content: system }, ...turns], { modelTier: S.settings.model.includes("sonnet") ? "default" : "quick", cache: false });
+    } catch (e) { throw new Error(SAMPLE_ERR[e && e.code] || "Couldn't reach Claude. Try again."); }
+  }
+  const key = getKey();
+  if (!key) throw new Error("Add your Anthropic API key in Settings to use this.");
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: S.settings.model, max_tokens: maxTokens, system, messages: turns }),
+    });
+  } catch { throw new Error("Couldn't reach Claude. Check your connection."); }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error("Claude API error: " + ((data && data.error && data.error.message) || res.status));
+  return extractJson((data.content || []).filter((b) => b.type === "text").map((b) => b.text).join(""));
+}
+function cleanPhrases(raw, romanize) {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((x) => x && typeof x.target === "string" && typeof x.meaning === "string").map((x) => ({
+    target: x.target.trim(), meaning: x.meaning.trim(),
+    romanization: romanize && typeof x.romanization === "string" ? x.romanization.trim() : undefined,
+    register: REG_ORDER.includes(x.register) ? x.register : "neutral",
+    note: typeof x.note === "string" && x.note.trim() ? x.note.trim() : undefined,
+  }));
+}
+const LEVEL_GUIDE = {
+  beginner: "Absolute beginner. Use very short, high-frequency sentences (3-8 words). Repeat key words.",
+  elementary: "Elementary (about CEFR A2). Short everyday sentences, present and simple past.",
+  intermediate: "Intermediate (about CEFR B1). Natural pace and normal everyday vocabulary.",
+  advanced: "Advanced (B2+). Speak naturally, idioms welcome.",
+};
+function recycleList(code) {
+  return Object.values(S.cards).filter((c) => c.lang === code && c.srs.state !== "new").sort((a, b) => a.srs.due - b.srs.due).slice(0, 12)
+    .map((c) => `${cleanSpeech(c.target)} (${c.meaning})`).join("; ");
+}
+function tutorSystem(lang, variant, scenario) {
+  const st = S.settings, rom = lang.romanize, recycle = recycleList(lang.code);
+  return `You are a native ${lang.name} speaker from ${variant.label}, acting as a friendly conversation partner for a learner who wants to SPEAK like locals, including real slang.
+
+Scenario: ${scenario.brief}
+Learner level: ${LEVEL_GUIDE[st.level]}
+Register: ${st.formality === "casual" ? "casual, like friends; use common slang from " + variant.label + " when natural" : "polite/standard, but mention casual equivalents in phrases"}.${recycle ? `
+Phrases the learner is learning right now: ${recycle}. Over the conversation, use 2-3 of them naturally and set up chances for the learner to say them.` : ""}
+
+Each turn:
+1. Reply in ${lang.name} only, 1-3 short sentences, slightly above the learner's level. Always end with a question or prompt that makes them talk. Keep YOUR talking short; THEY should talk most.
+2. Sound like a real person from ${variant.label}: contractions, fillers, regional words.${variant.id === "kansai" ? " Use Kansai-ben." : ""}
+3. If the learner made an error, give ONE correction, picking the error that most hurts meaning or naturalness. Don't just restate it: write "hint" as a short nudge in English that pushes them to fix it themselves (e.g. "Check the verb ending for 'yesterday'"). Put the full fixed sentence in "corrected" and a one-line reason in "why". If it was correct but unnatural, correct it to the natural local way. If there is no error, set "correction" to null.
+4. If the learner writes English or mixes languages, show how to say it in "corrected" and give a hint to try saying it.
+5. "phrases": 0-3 reusable chunks or slang from YOUR reply or the correction worth memorizing as whole units. Prefer multi-word chunks over single words.
+${lang.code === "zh" ? `6. Mandarin: write simplified characters; "romanization" is Hanyu Pinyin with tone marks. The learner often speaks through speech recognition, so a tone mistake can appear as a wrong but similar-sounding word (for example 水饺 where 睡觉 fits). If a word looks like a near-homophone that doesn't fit, treat it as a likely tone error: in the hint, name the word and the tones to use. Also watch measure words, 了/过/在, and time-before-verb word order.${variant.id === "bj" ? " Speak with Beijing flavor (儿化, 您, local words) when natural." : ""}\n` : ""}
+Return ONLY a JSON object, no markdown:
+{"reply": "...", ${rom ? '"romanization": "romanized reply", ' : ""}"translation": "English translation of reply", "correction": null or {"hint": "...", "corrected": "...", "why": "..."}, "phrases": [{"target": "...", ${rom ? '"romanization": "...", ' : ""}"meaning": "English", "register": "polite|neutral|casual|slang|crude", "note": "optional usage tip"}]}`;
+}
+function normTurn(j, rom) {
+  const c = j && j.correction;
+  return {
+    reply: String((j && j.reply) || ""), romanization: rom && j && j.romanization ? String(j.romanization) : "",
+    translation: String((j && j.translation) || ""),
+    correction: c && c.corrected ? { hint: String(c.hint || ""), corrected: String(c.corrected), why: String(c.why || "") } : null,
+    phrases: cleanPhrases(j && j.phrases, rom),
+  };
+}
+
+// ───────── UI state ─────────
+const freshTalk = () => ({ scenario: null, msgs: [], history: [], busy: false, err: null, draft: "", spoken: false, listening: false, pending: null });
+const U = {
+  tab: "today", talk: freshTalk(), review: { queue: [], revealed: false, said: "", listening: false, done: 0 },
+  tones: { cur: null, answered: null, right: 0, total: 0, mode: null }, listen: { busy: false, err: null, playing: null, showRom: false, showEn: false, open: {}, rewarded: false }, coreBusy: false, coreErr: null, phrasesTab: "packs", gen: { busy: false, err: null }, confirmDel: null, confirmReset: false, backup: "", drill: null,
+};
+function resetForLanguage() { stopListening(); try { synth && synth.cancel(); } catch {} U.listen = { busy: false, err: null, playing: null, showRom: false, showEn: false, open: {}, rewarded: false }; U.talk = freshTalk(); U.review = { queue: [], revealed: false, said: "", listening: false, done: 0 }; buildQueue(); }
+function buildQueue() { U.review.queue = dueCards(cur().lang.code).map((c) => c.id); U.review.revealed = false; U.review.said = ""; }
+
+// ───────── small view helpers ─────────
+function reg(r) {
+  const i = REG_ORDER.indexOf(r);
+  return `<span class="reg reg-${esc(r)}" title="Register, from polite to crude"><span class="dots">${REG_ORDER.map((_, k) => `<i class="${k <= i ? "f" : ""}"></i>`).join("")}</span>${esc(r)}</span>`;
+}
+const sayBtn = (text, locale, label = "Play") => `<button class="icon" data-act="say" data-text="${esc(text)}" data-loc="${esc(locale)}" aria-label="${esc(label)}">${SVG.speak}</button>`;
+function picker(lang, variant, showVariants = true) {
+  return `<div class="stack" style="gap:8px">
+    <div class="chips" role="group" aria-label="Language">${allLangs().map((l) => `<button class="chip ${l.code === lang.code ? "on" : ""}" data-act="lang" data-v="${esc(l.code)}">${esc(l.nativeName)}</button>`).join("")}</div>
+    ${showVariants && lang.variants.length > 1 ? `<div class="chips" role="group" aria-label="Region">${lang.variants.map((v) => `<button class="chip alt ${v.id === variant.id ? "on" : ""}" data-act="variant" data-v="${esc(v.id)}">${esc(v.label)}</button>`).join("")}</div>` : ""}
+  </div>`;
+}
+const needAi = () => (aiReady() || !samplerKnown ? "" : `<div class="card notice"><p>The conversation partner and pack maker need Claude. Open this page inside the Claude app, or add an Anthropic API key in Settings.</p><button class="btn quiet" data-act="tab" data-v="settings">Open Settings</button></div>`);
+
+// ───────── views ─────────
+const VIEWS = {};
+
+VIEWS.today = (lang, variant) => {
+  const lv = levelInfo(S.xp), tx = todayXp(), goal = S.settings.dailyGoal, due = dueCards(lang.code).length;
+  const deck = Object.values(S.cards).filter((c) => c.lang === lang.code).length, sk = streakNow();
+  return `<div class="wrap">
+    <div class="hero">
+      <div><p class="eyebrow">Today · ${esc(lang.name)} · ${esc(variant.label)}</p><h1 lang="${esc(variant.ttsLocale)}">${esc(TODAY_WORD[lang.code] || "Today")}</h1></div>
+      <div class="streak"><b class="mono">${sk}</b><span class="muted small">day streak</span></div>
+    </div>
+    ${picker(lang, variant)}
+    <div class="card">
+      <div class="row between"><h2>Level ${lv.level}</h2><span class="muted mono small">${lv.toNext} XP to next</span></div>
+      <div class="bar"><i style="width:${(lv.progress * 100).toFixed(1)}%"></i></div>
+      <div class="row between"><span style="font-weight:700">${tx >= goal ? "Daily goal hit" : "Daily goal"}</span><span class="muted mono small">${tx} / ${goal} XP</span></div>
+      <div class="bar ${tx >= goal ? "good" : "gold"}"><i style="width:${Math.min(100, (tx / goal) * 100).toFixed(1)}%"></i></div>
+    </div>
+    ${needAi()}
+    ${lang.code === "zh" && livePacks().length && livePacks()[0].id === "live-week" ? `<div class="card"><div class="row between"><span class="live-tag">New this week</span><span class="muted small mono">${livePacks()[0].items.length} terms</span></div><p>Fresh slang pulled from Chinese social media.</p><button class="btn quiet" data-act="tab" data-v="phrases">See this week's slang</button></div>` : ""}
+    <div class="card">
+      <div><h2>The daily loop</h2><p class="muted">Recall, listen, talk, then say it faster. About 20 minutes, or any one step when you have two.</p></div>
+      <div class="steps">
+        <button class="step ${due ? "due" : deck ? "done" : ""}" data-act="tab" data-v="${deck ? "review" : "phrases"}"><span class="n">1</span><span class="grow"><b>${due ? `Say ${due} phrase${due === 1 ? "" : "s"} out loud` : deck ? "Reviews done for now" : "Add your first phrases"}</b><br><span class="muted small">Spaced review keeps them for months</span></span></button>
+        <button class="step" data-act="listen"><span class="n">2</span><span class="grow"><b>Listen to a story</b><br><span class="muted small">Written from words you know</span></span></button>
+        <button class="step" data-act="tab" data-v="talk"><span class="n">3</span><span class="grow"><b>Talk with your partner</b><br><span class="muted small">A mission with someone from ${esc(variant.label)}</span></span></button>
+        <button class="step" data-act="drill"><span class="n">4</span><span class="grow"><b>Fluency drill</b><br><span class="muted small mono">90s → 60s → 45s</span></span></button>
+        ${lang.code === "zh" ? `<button class="step" data-act="tones"><span class="n">5</span><span class="grow"><b>Tone ear training</b><br><span class="muted small">Two minutes of tone pairs</span></span></button>` : ""}
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${deck}</b><span>in deck</span></div>
+      <div class="stat"><b>${Math.round(S.stats.speakingSeconds / 60)}</b><span>min spoken</span></div>
+      <div class="stat"><b>${S.stats.mined}</b><span>mined</span></div>
+      <div class="stat"><b>${S.streak.best}</b><span>best streak</span></div>
+    </div>
+  </div>`;
+};
+
+VIEWS.talk = (lang, variant) => {
+  const T = U.talk;
+  if (!T.scenario) {
+    const ok = aiReady();
+    return `<div class="wrap"><h1>Talk</h1>${picker(lang, variant)}${needAi()}
+      <p class="muted">Pick a mission. Your partner talks like someone from ${esc(variant.label)}, nudges you to fix your own mistakes, and hands you phrases worth keeping.</p>
+      ${SCENARIOS.map((s) => `<button class="card scen" data-act="scenario" data-v="${esc(s.id)}" ${ok ? "" : "disabled"}><h3>${esc(s.title)}</h3><p class="muted">${esc(s.brief)}</p></button>`).join("")}
+    </div>`;
+  }
+  const loc = variant.ttsLocale;
+  const msgs = T.msgs.map((m, i) => {
+    if (m.role === "a") {
+      const t = m.turn;
+      return `<div class="msg them"><div class="bubble"><div class="row" style="align-items:flex-start"><p class="target grow" lang="${esc(loc)}">${esc(t.reply)}</p>${sayBtn(t.reply, loc)}</div>
+        ${t.romanization ? `<p class="muted">${esc(t.romanization)}</p>` : ""}
+        <button class="linkish" data-act="tr" data-i="${i}">${m.showTr ? esc(t.translation) : "Show translation"}</button></div>
+        ${t.phrases.map((p, j) => `<button class="mine ${p.added ? "added" : ""}" data-act="mine" data-i="${i}" data-j="${j}" ${p.added ? "disabled" : ""}><span class="plus">${p.added ? "✓" : "+"}</span><span class="grow"><b lang="${esc(loc)}">${esc(p.target)}</b>${p.romanization ? ` <span class="muted">(${esc(p.romanization)})</span>` : ""}<br><span class="muted small">${esc(p.meaning)}</span></span>${reg(p.register)}</button>`).join("")}
+      </div>`;
+    }
+    const c = m.correction;
+    return `<div class="msg me"><div class="bubble">${m.spoken ? "<span class='small'>spoken · </span>" : ""}${esc(m.text)}</div>
+      ${c ? `<div class="fix"><p class="hint">${esc(c.hint)}</p>${m.reveal ? `<div class="row" style="align-items:flex-start"><p class="grow" lang="${esc(loc)}">${esc(c.corrected)}</p>${sayBtn(c.corrected, loc)}</div><p class="muted small">${esc(c.why)}</p>` : `<div class="row wrap-ok"><button class="btn sm quiet" data-act="retry-say">Try saying it again</button><button class="btn sm ghost" data-act="reveal-fix" data-i="${i}">Show the fix</button></div>`}</div>` : ""}
+    </div>`;
+  }).join("");
+  return `<div class="wrap">
+    <div class="row between"><div class="grow"><h2>${esc(T.scenario.title)}</h2><p class="muted small">${esc(lang.name)} · ${esc(variant.label)}</p></div><button class="btn sm ghost" data-act="new-talk">New mission</button></div>
+    <div class="chat" id="chat">${msgs}
+      ${T.busy ? `<p class="muted">Your partner is typing…</p>` : ""}
+      ${T.err ? `<div class="stack"><p class="err">${esc(T.err)}</p><button class="btn sm quiet" data-act="talk-retry">Try again</button></div>` : ""}
+    </div>
+    <div class="composer">
+      ${srOK ? `<button class="round ${T.listening ? "live" : ""}" data-act="talk-mic" aria-label="${T.listening ? "Stop listening" : "Speak"}">${T.listening ? SVG.stop : SVG.mic}</button>` : ""}
+      <textarea id="draft" rows="1" placeholder="${T.listening ? "Listening…" : `Say or type in ${esc(lang.name)}`}" aria-label="Your reply">${esc(T.draft)}</textarea>
+      <button class="round ${T.draft.trim() ? "" : "off"}" id="sendBtn" data-act="send" aria-label="Send">${SVG.send}</button>
+    </div>
+    ${srOK ? "" : `<p class="muted small">Tip: tap the mic on the iOS keyboard to speak your reply.</p>`}
+  </div>`;
+};
+
+VIEWS.review = (lang, variant) => {
+  const R = U.review;
+  const card = S.cards[R.queue[0]];
+  if (!card) {
+    const deck = Object.values(S.cards).filter((c) => c.lang === lang.code).length;
+    return `<div class="wrap"><h1>Review</h1>${picker(lang, variant, false)}
+      <div class="card"><h2>${R.done ? `${R.done} done. Nice work.` : "Nothing due right now"}</h2>
+      <p class="muted">${deck ? "Come back later. Spreading reviews out is what makes phrases stick." : "Your deck is empty. Add a pack, or tap phrases during a conversation."}</p>
+      <button class="btn quiet" data-act="tab" data-v="${deck ? "talk" : "phrases"}">${deck ? "Go talk" : "Browse phrase packs"}</button>
+      ${deck ? `<button class="btn ghost" data-act="requeue">Check for due cards</button>` : ""}</div></div>`;
+  }
+  const loc = variant.ttsLocale, listenMode = card.srs.reps > 0 && card.srs.reps % 3 === 2;
+  const now = Date.now(), pv = [1, 2, 3, 4].map((g) => schedule(card.srs, g, now).due - now);
+  const score = R.revealed && R.said ? matchScore(R.said, card.target) : null;
+  return `<div class="wrap">
+    <div class="row between"><h1>Review</h1><span class="muted mono">${R.queue.length} left</span></div>
+    <div class="card flash">
+      <div class="row between">${reg(card.register)}<span class="eyebrow">${card.srs.state === "new" ? "New" : listenMode ? "Listen" : "Say it"}</span></div>
+      ${listenMode && !R.revealed
+        ? `<p class="prompt">What does this mean?</p><button class="btn quiet" data-act="say" data-text="${esc(card.target)}" data-loc="${esc(loc)}">Play it again</button>`
+        : `<p class="muted">Say this in ${esc(lang.name)}:</p><p class="prompt">${esc(card.meaning)}</p>${card.note && !R.revealed ? `<p class="muted small">Hint: ${esc(card.note)}</p>` : ""}`}
+      ${R.revealed ? `<div class="answer"><div class="row" style="align-items:flex-start"><p class="target grow" lang="${esc(loc)}">${esc(card.target)}</p>${sayBtn(card.target, loc)}</div>
+        ${card.romanization ? `<p class="muted">${esc(card.romanization)}</p>` : ""}${listenMode ? `<p>${esc(card.meaning)}</p>` : ""}${card.note ? `<p class="muted small">${esc(card.note)}</p>` : ""}</div>` : ""}
+      ${R.said ? `<p class="muted small">You said: “${esc(R.said)}”${score !== null ? ` · <span class="mono">${score}% match</span>` : ""}</p>` : ""}
+    </div>
+    ${!R.revealed
+      ? `<div class="stack">${srOK ? `<button class="btn ${R.listening ? "danger" : "quiet"}" data-act="review-mic">${R.listening ? "Stop" : "Say it out loud"}</button>` : ""}
+          <button class="btn" data-act="reveal">Reveal</button>
+          ${srOK ? "" : `<p class="muted small" style="text-align:center">Say it out loud before you reveal. The effort of recalling is what builds memory.</p>`}</div>`
+      : `<div class="stack"><button class="btn quiet" data-act="shadow" data-text="${esc(card.target)}" data-loc="${esc(loc)}">Shadow it: plays twice, speak along</button>
+          <div class="grades">${["Again", "Hard", "Good", "Easy"].map((l, k) => `<button class="grade g${k + 1}" data-act="grade" data-v="${k + 1}">${l}<small>${fmtIvl(pv[k])}</small></button>`).join("")}</div></div>`}
+  </div>`;
+};
+
+VIEWS.phrases = (lang, variant) => {
+  const tab = U.phrasesTab;
+  let body = "";
+  const loc = variant.ttsLocale;
+  const inDeck = new Set(Object.values(S.cards).filter((c) => c.lang === lang.code).map((c) => norm(c.target)));
+  if (tab === "packs") {
+    const packs = packsFor(lang.code).filter((p) => p.variant === "all" || p.variant === variant.id);
+    const coreCard = `<div class="card"><div class="row between"><h3>Core path</h3><span class="muted small mono">${S.corePath[lang.code] || 0} sets added</span></div>
+      <p class="muted small">The next 20 most-used everyday words, each inside a phrase you can say. Common words first is the fastest way to understand more.</p>
+      <button class="btn" data-act="core-next" ${U.coreBusy || !aiReady() ? "disabled" : ""}>${U.coreBusy ? "Picking your next 20…" : "Add the next 20 core phrases"}</button>
+      ${U.coreErr ? `<p class="err">${esc(U.coreErr)}</p>` : ""}</div>`;
+    body = coreCard + (packs.length ? packs.map((p, pi) => {
+      const missing = p.items.filter((it) => !inDeck.has(norm(it.target))).length;
+      return `<details class="card pack" ${pi === 0 ? "open" : ""}><summary class="row between"><div class="grow"><h3>${esc(p.title)}</h3>
+        <p class="muted small">${p.items.length} phrases · ${p.kind === "live" ? "from Chinese social media" : p.kind === "slang" ? "street talk" : p.kind === "custom" ? "made by you" : "core survival"}${missing ? "" : " · all in your deck"}</p></div>${SVG.caret}</summary>
+        ${missing ? `<button class="btn" data-act="add-all" data-v="${esc(p.id)}">Add ${missing} to my deck</button>` : ""}
+        ${p.items.map((it, i) => phraseRow(it, loc, inDeck.has(norm(it.target)) ? `<button class="icon" disabled aria-label="In deck" style="color:var(--good)">✓</button>` : `<button class="icon" data-act="add-one" data-v="${esc(p.id)}" data-i="${i}" aria-label="Add to deck"><b style="font-size:1.4rem;line-height:1">+</b></button>`)).join("")}
+      </details>`;
+    }).join("") : `<div class="card"><p class="muted">No packs for ${esc(lang.name)} yet. Use “Make a pack” to generate one for any topic or region.</p></div>`);
+  } else if (tab === "deck") {
+    const mine = Object.values(S.cards).filter((c) => c.lang === lang.code).sort((a, b) => b.createdAt - a.createdAt);
+    const ct = { new: 0, learning: 0, review: 0, relearning: 0 }; mine.forEach((c) => ct[c.srs.state]++);
+    body = `<div class="card"><h2>${mine.length} phrases</h2><p class="muted">${ct.new} new · ${ct.learning + ct.relearning} learning · ${ct.review} in long-term review</p></div>
+      <div class="card">${mine.length ? mine.map((c) => phraseRow(c, loc, U.confirmDel === c.id
+        ? `<button class="btn sm danger" data-act="del" data-v="${esc(c.id)}">Remove</button>`
+        : `<button class="icon" style="color:var(--muted)" data-act="ask-del" data-v="${esc(c.id)}" aria-label="Remove">${SVG.trash}</button>`)).join("") : `<p class="muted">Empty. Add a pack, or tap phrases during a conversation.</p>`}</div>`;
+  } else {
+    const ideas = ["Texting friends", "Night out", "Flirting and compliments", "Gaming trash talk (friendly)", "Arguing politely", "Work small talk", "Reacting to news"];
+    body = `<div class="card"><h2>Make a ${esc(lang.name)} pack</h2><p class="muted">Any topic, tuned to ${esc(variant.label)}. Works for languages you add in Settings too.</p>
+      <input type="text" id="topic" placeholder="e.g. ordering at a taco stand" autocomplete="off">
+      <div class="chips wrapping">${ideas.map((t) => `<button class="chip" data-act="idea" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+      <label class="toggle" for="slangHeavy">Heavy on slang <input type="checkbox" id="slangHeavy" checked></label>
+      <button class="btn" data-act="gen" ${U.gen.busy || !aiReady() ? "disabled" : ""}>${U.gen.busy ? "Writing 20 phrases…" : "Generate 20 phrases"}</button>
+      ${U.gen.err ? `<p class="err">${esc(U.gen.err)}</p>` : ""}
+      <p class="muted small">AI-written slang can be off. Check new items with your Talk partner or a native speaker before using them with strangers.</p></div>${needAi()}`;
+  }
+  return `<div class="wrap"><h1>Phrases</h1>${picker(lang, variant)}
+    <div class="chips"><button class="chip ${tab === "packs" ? "on" : ""}" data-act="ptab" data-v="packs">Packs</button><button class="chip ${tab === "deck" ? "on" : ""}" data-act="ptab" data-v="deck">My deck</button><button class="chip ${tab === "make" ? "on" : ""}" data-act="ptab" data-v="make">Make a pack</button></div>
+    ${body}</div>`;
+};
+function phraseRow(it, loc, action) {
+  return `<div class="phrase"><div class="grow stack" style="gap:3px"><p class="t" lang="${esc(loc)}">${esc(it.target)}</p>${it.romanization ? `<p class="muted small">${esc(it.romanization)}</p>` : ""}
+    <p>${esc(it.meaning)}</p>${it.note ? `<p class="muted small">${esc(it.note)}</p>` : ""}${reg(it.register)}</div>${sayBtn(it.target, loc)}${action}</div>`;
+}
+
+VIEWS.settings = () => {
+  const st = S.settings, key = getKey();
+  const chips = (k, opts) => opts.map(([v, l]) => `<button class="chip ${st[k] === v ? "on" : ""}" data-act="set" data-k="${k}" data-v="${esc(v)}" data-num="${typeof v === "number" ? 1 : 0}">${esc(l)}</button>`).join("");
+  return `<div class="wrap"><h1>Settings</h1>
+    <div class="card"><h2>Claude</h2>
+      ${SAMPLER ? `<p>You're inside the Claude app, so the partner runs on your Claude account. No key needed here.</p>` : ""}
+      <p class="muted">${SAMPLER ? "For the Home Screen version, add an API key below." : "Paste an Anthropic API key from console.anthropic.com. It stays in this browser on this phone and is only sent to Anthropic."}</p>
+      <input type="password" id="apikey" placeholder="${key ? "Saved key ending " + esc(key.slice(-4)) : "sk-ant-…"}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="row"><button class="btn grow" data-act="save-key">${key ? "Replace key" : "Save key"}</button>${key ? `<button class="btn ghost" data-act="del-key">Remove</button>` : ""}</div>
+      <p style="font-weight:700">Model</p><div class="chips wrapping">${chips("model", [["claude-haiku-5-5", "Haiku · fast"], ["claude-sonnet-5-5", "Sonnet · sharper"]])}</div>
+    </div>
+    <div class="card"><h2>Level and style</h2>
+      <div class="chips wrapping">${chips("level", [["beginner", "Beginner"], ["elementary", "Elementary"], ["intermediate", "Intermediate"], ["advanced", "Advanced"]])}</div>
+      <div class="chips wrapping">${chips("formality", [["casual", "Casual + slang"], ["polite", "Polite"]])}</div>
+    </div>
+    <div class="card"><h2>Daily targets</h2>
+      <p style="font-weight:700">XP goal</p><div class="chips wrapping">${chips("dailyGoal", [[50, "50 light"], [100, "100 steady"], [200, "200 intense"]])}</div>
+      <p style="font-weight:700">New phrases per day</p><div class="chips wrapping">${chips("newPerDay", [[10, "10"], [15, "15"], [25, "25"], [40, "40"]])}</div>
+      <p class="muted small">10–15 new a day keeps reviews near 10 minutes.</p>
+    </div>
+    <div class="card"><h2>Audio</h2>
+      <label class="toggle" for="autoSpeak">Auto-play partner replies <input type="checkbox" id="autoSpeak" ${st.autoSpeak ? "checked" : ""}></label>
+      <p style="font-weight:700">Speech speed</p><div class="chips wrapping">${chips("rate", [[0.7, "Slow"], [0.9, "Normal"], [1.05, "Native"]])}</div>
+      <p class="muted small">For better voices: iOS Settings › Accessibility › Spoken Content › Voices, then download the Enhanced or Premium voice for each language.</p>
+    </div>
+    <div class="card"><h2>Tone Lab</h2>
+      <p class="muted">The Tone Lab draws your pitch as you speak Mandarin. It needs the microphone, so it runs in Safari. Paste its link here to open it from the Tones screen.</p>
+      <input type="text" id="tonelab" placeholder="https://…" value="${esc(st.toneLabUrl || "")}" autocapitalize="off" spellcheck="false">
+      <button class="btn quiet" data-act="save-tonelab">Save link</button>
+    </div>
+    <div class="card"><h2>Add any language</h2>
+      <p class="muted">Give it a name and a locale code (pt-BR, fr-FR, it-IT, de-DE, zh-CN, hi-IN, tl-PH, ar-SA), then make packs and talk.</p>
+      <input type="text" id="clName" placeholder="Language (e.g. Portuguese)">
+      <input type="text" id="clLocale" placeholder="Locale code (e.g. pt-BR)" autocapitalize="off" spellcheck="false">
+      <input type="text" id="clVariant" placeholder="Region or dialect (e.g. Rio de Janeiro)">
+      <label class="toggle" for="clRoman">Show romanization <input type="checkbox" id="clRoman"></label>
+      <div class="row"><button class="btn grow" data-act="add-lang">Add language</button><button class="btn ghost" data-act="test-voice">Test voice</button></div>
+      ${S.customLanguages.map((l) => `<div class="row between"><span>${esc(l.name)} · ${esc(l.variants[0].label)} <span class="muted mono small">${esc(l.variants[0].ttsLocale)}</span></span><button class="btn sm ghost" data-act="rm-lang" data-v="${esc(l.code)}">Remove</button></div>`).join("")}
+    </div>
+    <div class="card"><h2>Backup</h2>
+      <p class="muted">Your progress lives on this phone. Copy a backup now and then, or move progress between the Claude app and your Home Screen.</p>
+      <div class="row"><button class="btn quiet grow" data-act="copy-backup">Copy backup</button></div>
+      ${U.backup ? `<textarea id="backupOut" rows="4" readonly>${esc(U.backup)}</textarea><p class="muted small">Copying was blocked, so select the text above and copy it.</p>` : ""}
+      <textarea id="restoreIn" rows="3" placeholder="Paste a backup here to restore it"></textarea>
+      <button class="btn ghost" data-act="restore">Restore from backup</button>
+    </div>
+    <div class="card"><h2>Progress</h2>
+      <p class="muted mono small">${S.xp} XP · ${S.stats.reviews} reviews · ${S.stats.turns} turns · ${S.stats.drillRounds} drill rounds</p>
+      <button class="btn ${U.confirmReset ? "danger" : "ghost"}" data-act="reset">${U.confirmReset ? "Tap again to erase everything" : "Reset all progress"}</button>
+    </div>
+  </div>`;
+};
+
+function toneGlyph(t) {
+  if (t === "0") return '<svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="15" r="3" fill="currentColor"/></svg>';
+  const d = { "1": "M3 6 H21", "2": "M3 18 L21 5", "3": "M3 11 L10 19 L21 7", "4": "M3 5 L21 19" }[t];
+  return `<svg class="tg" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const toneName = (p) => p.split("").map((t) => (t === "0" ? "neutral" : t)).join(" + ");
+const toneGlyphs = (p) => `<span class="row" style="gap:2px">${p.split("").map(toneGlyph).join("")}</span>`;
+function pickToneMode() {
+  const s = Object.entries(S.toneStats).filter(([k]) => k[0] === "s");
+  const n = s.reduce((a, [, v]) => a + v.n, 0), ok = s.reduce((a, [, v]) => a + v.ok, 0);
+  return n < 20 || ok / n < 0.8 ? "single" : "pairs";
+}
+function newToneRound() {
+  const st = S.toneStats, single = U.tones.mode === "single", list = single ? SINGLE_WORDS : TONE_WORDS;
+  const key = (p) => (single ? "s" : "") + p;
+  const w = list.map((x) => { const s = st[key(x[3])]; return s && s.n ? 1 + 4 * (1 - s.ok / s.n) : 2.5; });
+  let r = Math.random() * w.reduce((a, b) => a + b, 0), pick = list[0];
+  for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) { pick = list[i]; break; } }
+  if (U.tones.cur && U.tones.cur.w === pick && list.length > 1) pick = list[(list.indexOf(pick) + 1) % list.length];
+  const p = pick[3];
+  const near = TONE_PATTERNS.filter((q) => q !== p && (q[0] === p[0] || q[1] === p[1])).sort(() => Math.random() - 0.5).slice(0, 3);
+  U.tones.cur = { w: pick, single, opts: single ? ["1", "2", "3", "4"] : [p, ...near].sort(() => Math.random() - 0.5) };
+  U.tones.answered = null;
+}
+VIEWS.tones = () => {
+  const T = U.tones; if (!T.cur) newToneRound();
+  const [hz, py, en, p] = T.cur.w, a = T.answered;
+  const hard = Object.entries(S.toneStats).filter(([, s]) => s.n >= 3).map(([k, s]) => [k, s.ok / s.n]).sort((x, y) => x[1] - y[1]).slice(0, 4);
+  return `<div class="wrap">
+    <div class="row between"><h1>Tones</h1><button class="btn sm ghost" data-act="tab" data-v="today">Close</button></div>
+    <p class="muted">Train your ear. Each word plays in a different voice, pitch and speed, which is what makes tone training carry over to real speakers. Anything you miss comes back more often.</p>
+    <div class="chips"><button class="chip ${T.mode === "single" ? "on" : ""}" data-act="tone-mode" data-v="single">Single tones</button><button class="chip ${T.mode === "pairs" ? "on" : ""}" data-act="tone-mode" data-v="pairs">Tone pairs</button></div>
+    <div class="card" style="align-items:center;text-align:center;min-height:170px;justify-content:center">
+      <p class="eyebrow">Which tones do you hear?</p>
+      ${a ? `<p class="target" style="font-size:2.4rem;font-weight:700" lang="zh-CN">${esc(hz)}</p><p class="mono">${esc(py)}</p><p class="muted">${esc(en)}</p>
+        <p style="font-weight:700;color:var(--${a === p ? "good" : "bad"})">${a === p ? "Correct" : "It was " + toneName(p)}</p>` : `<p class="prompt" aria-hidden="true">？</p>`}
+      <button class="btn quiet" data-act="tone-play">Play again</button>
+    </div>
+    <div class="grades" style="grid-template-columns:repeat(2,minmax(0,1fr))">${T.cur.opts.map((o) => `<button class="grade tone-opt ${a ? (o === p ? "right" : o === a ? "wrong" : "") : ""}" data-act="tone-pick" data-v="${o}" ${a ? "disabled" : ""}>${toneGlyphs(o)}<small>${T.cur.single ? "Tone " + o : toneName(o)}</small></button>`).join("")}</div>
+    ${a ? `<button class="btn" data-act="tone-next">Next pair</button>` : ""}
+    <p class="muted small mono">${T.right} / ${T.total} right this session</p>
+    ${hard.length ? `<div class="card"><h3>Your hardest pairs</h3>${hard.map(([k, v]) => `<div class="row between">${toneGlyphs(k.replace("s", ""))}<span class="grow small">${k[0] === "s" ? "Tone " + k[1] + " alone" : toneName(k)}</span><span class="mono small">${Math.round(v * 100)}%</span></div>`).join("")}</div>` : ""}
+    <div class="card"><h3>Tone change rules</h3>
+      <p class="small">Two 3rd tones in a row: the first becomes a 2nd. 你好 is said ní hǎo.</p>
+      <p class="small">不 before a 4th tone becomes bú: 不是 bú shì.</p>
+      <p class="small">一 before a 4th tone becomes yí (一个 yí ge); before other tones it becomes yì (一天 yì tiān).</p></div>
+    ${S.settings.toneLabUrl ? `<a class="btn ghost" href="${esc(S.settings.toneLabUrl)}" target="_blank" rel="noopener">Practice saying tones in the Tone Lab</a>` : ""}
+  </div>`;
+};
+
+function knownTargets(code) {
+  const all = Object.values(S.cards).filter((c) => c.lang === code);
+  const seen = all.filter((c) => c.srs.state !== "new");
+  return (seen.length >= 30 ? seen : all).sort((a, b) => (b.srs.lastReview || b.createdAt) - (a.srs.lastReview || a.createdAt)).slice(0, 250).map((c) => cleanSpeech(c.target)).filter(Boolean);
+}
+async function genStory(lang, variant, topic) {
+  const known = knownTargets(lang.code);
+  const sys = `You write graded listening practice for a learner of ${lang.name} as spoken in ${variant.label}. Level: ${LEVEL_GUIDE[S.settings.level]}
+The learner already knows: ${known.length ? known.join(" / ") : "almost nothing yet, so use only the most basic, high-frequency beginner words"}.
+Rules: at least 95% of the words must be ones this learner knows or near-universal basics at their level. Introduce at most 4 new words or chunks, make each clear from context, and repeat each at least twice. Reuse the known phrases naturally. Short sentences in natural spoken style, the way people in ${variant.label} really talk.${lang.code === "zh" ? " Simplified characters; romanization is Hanyu Pinyin with tone marks." : ""}`;
+  const prompt = `Write a short story or dialogue of 8 to 12 sentences about: ${topic}.
+Return ONLY JSON: {"title": "...", "sentences": [{"text": "...", ${lang.romanize ? '"romanization": "...", ' : ""}"en": "English translation"}], "newWords": [{"target": "...", ${lang.romanize ? '"romanization": "...", ' : ""}"meaning": "English", "register": "polite|neutral|casual|slang|crude", "note": "short usage tip"}]}`;
+  const j = await aiJSON(sys, [{ role: "user", content: prompt }], 2500);
+  const sentences = (Array.isArray(j && j.sentences) ? j.sentences : []).filter((s) => s && s.text).map((s) => ({ text: String(s.text), romanization: lang.romanize && s.romanization ? String(s.romanization) : "", en: String(s.en || "") }));
+  if (!sentences.length) throw new Error("The story came back empty. Try again.");
+  return { title: String((j && j.title) || topic), topic, sentences, newWords: cleanPhrases(j && j.newWords, lang.romanize), createdAt: Date.now() };
+}
+function playStoryFrom(i) {
+  const { lang, variant } = cur(), story = S.lastStory[lang.code], L = U.listen;
+  if (!story) return;
+  if (i >= story.sentences.length) {
+    L.playing = null;
+    if (!L.rewarded) { L.rewarded = true; addXp(10); save(); toast("Story finished · +10 XP"); }
+    render(); return;
+  }
+  L.playing = i; render();
+  speak(story.sentences[i].text, variant.ttsLocale, S.settings.rate, () => { if (U.listen === L && L.playing === i) setTimeout(() => { if (L.playing === i) playStoryFrom(i + 1); }, 350); });
+}
+VIEWS.listen = (lang, variant) => {
+  const L = U.listen, story = S.lastStory[lang.code], loc = variant.ttsLocale;
+  const inDeck = new Set(Object.values(S.cards).filter((c) => c.lang === lang.code).map((c) => norm(c.target)));
+  return `<div class="wrap">
+    <div class="row between"><h1>Listen</h1><button class="btn sm ghost" data-act="tab" data-v="today">Close</button></div>
+    <p class="muted">Stories written from words you already know, so about 95% of each one makes sense. Listen before you read. Tap a sentence to replay it and see what it means.</p>
+    ${needAi()}
+    ${story ? `<div class="card">
+      <h2>${esc(story.title)}</h2>
+      <div class="row wrap-ok">
+        <button class="btn ${L.playing !== null ? "danger" : ""}" data-act="story-play">${L.playing !== null ? "Stop" : "Play the whole story"}</button>
+        ${lang.romanize ? `<button class="chip ${L.showRom ? "on" : ""}" data-act="story-rom">${lang.code === "zh" ? "Pinyin" : "Romanization"}</button>` : ""}
+        <button class="chip ${L.showEn ? "on" : ""}" data-act="story-en">English</button>
+      </div>
+      <div class="stack" style="gap:4px">${story.sentences.map((s, i) => `<button class="sent ${L.playing === i ? "on" : ""}" data-act="story-sent" data-i="${i}"><span class="target" lang="${esc(loc)}">${esc(s.text)}</span>${L.showRom && s.romanization ? `<span class="muted small">${esc(s.romanization)}</span>` : ""}${L.showEn || L.open[i] ? `<span class="small">${esc(s.en)}</span>` : ""}</button>`).join("")}</div>
+      ${story.newWords.length ? `<h3>New in this story</h3>${story.newWords.map((p, i) => phraseRow(p, loc, inDeck.has(norm(p.target)) ? `<button class="icon" disabled aria-label="In deck" style="color:var(--good)">✓</button>` : `<button class="icon" data-act="story-add" data-i="${i}" aria-label="Add to deck"><b style="font-size:1.4rem;line-height:1">+</b></button>`)).join("")}` : ""}
+    </div>` : ""}
+    <div class="card"><h3>${story ? "New story" : "Write your first story"}</h3>
+      <input type="text" id="storyTopic" placeholder="Topic (optional), e.g. a clutch round in Siege" autocomplete="off">
+      <button class="btn" data-act="story-gen" ${L.busy || !aiReady() ? "disabled" : ""}>${L.busy ? "Writing your story…" : "Write a story"}</button>
+      ${L.err ? `<p class="err">${esc(L.err)}</p>` : ""}
+    </div>
+  </div>`;
+};
+
+VIEWS.drill = (lang, variant) => {
+  const D = U.drill, ROUNDS = [90, 60, 45], done = D.round >= 3;
+  const wpm = (r) => Math.round((r.words / r.seconds) * 60), max = Math.max(1, ...D.results.map(wpm));
+  return `<div class="wrap">
+    <div class="row between"><h1>Drill</h1><button class="btn sm ghost" data-act="tab" data-v="today">Close</button></div>
+    <div class="card"><p class="eyebrow">Say it in ${esc(lang.name)}</p><p class="prompt">${esc(D.topic)}</p>
+      ${!D.running && D.round === 0 ? `<button class="btn sm ghost" data-act="drill-topic" style="align-self:flex-start">Different topic</button>` : ""}</div>
+    ${!done ? `<div class="card" style="align-items:center;text-align:center">
+      <p class="muted">Round ${D.round + 1} of 3 · <span class="mono">${ROUNDS[D.round]}s</span></p>
+      <p class="timer ${D.running ? "live" : ""}" id="timer">${D.running ? D.left : ROUNDS[D.round]}</p>
+      <p class="muted">${D.round === 0 ? "Talk without stopping. Use fillers instead of pausing. Mistakes are fine." : "Same story, less time. Say the same things faster and smoother."}</p>
+      ${D.running ? `<button class="btn quiet" data-act="drill-stop">Done early</button>` : `<button class="btn" data-act="drill-start">Start round ${D.round + 1}</button>`}
+      <p class="muted small" id="drillText">${esc(D.transcript.slice(-220))}</p>
+      ${srOK ? "" : `<p class="muted small">Talk out loud against the timer. Word counts need the microphone, which works when this page is open in a Safari tab.</p>`}
+    </div>` : ""}
+    ${D.results.length && D.results.some((r) => r.words) ? `<div class="card"><h2>Speed by round</h2>${D.results.map((r, i) => `<div class="stack" style="gap:4px"><div class="row between"><span>Round ${i + 1} <span class="muted mono small">${r.seconds}s</span></span><span class="mono small">${wpm(r)} wpm</span></div><div class="bar ${i === D.results.length - 1 ? "good" : ""}"><i style="width:${((wpm(r) / max) * 100).toFixed(1)}%"></i></div></div>`).join("")}<p class="muted small">Speed should climb across rounds. That's fluency forming.</p></div>` : ""}
+    ${done ? `<div class="card"><h2>Drill done · <span class="mono">+${XP.drillRound * 3} XP</span></h2>
+      ${D.results.some((r) => r.transcript) && !D.fb ? `<button class="btn" data-act="drill-fb" ${D.busy || !aiReady() ? "disabled" : ""}>${D.busy ? "Listening back…" : "Get coach feedback on your last round"}</button>` : ""}
+      ${D.err ? `<p class="err">${esc(D.err)}</p>` : ""}
+      ${D.fb ? `<p>${esc(D.fb.summary)}</p>${D.fb.fixes.map((f) => `<div class="phrase"><div class="grow stack" style="gap:3px"><p class="muted">You: ${esc(f.said)}</p><p style="color:var(--good);font-weight:700" lang="${esc(variant.ttsLocale)}">${esc(f.better)}</p><p class="muted small">${esc(f.why)}</p></div>${sayBtn(f.better, variant.ttsLocale)}</div>`).join("")}
+        ${D.fb.phrases.length ? `<h3>Phrases for this topic</h3>${D.fb.phrases.map((p) => phraseRow(p, variant.ttsLocale, "")).join("")}<button class="btn quiet" data-act="drill-add" ${D.added ? "disabled" : ""}>${D.added ? "Added to your deck" : "Add these to my deck"}</button>` : ""}` : ""}
+      <div class="row"><button class="btn quiet grow" data-act="drill-again">Same topic again</button><button class="btn quiet grow" data-act="drill-new">New topic</button></div></div>` : ""}
+  </div>`;
+};
+
+// ───────── render ─────────
+const view = $("#view");
+let lastTab = null;
+function render() {
+  const { lang, variant } = cur();
+  const navTab = ["drill", "tones", "listen"].includes(U.tab) ? "today" : U.tab;
+  document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === navTab ? "page" : "false"));
+  const keepScroll = lastTab === U.tab ? view.scrollTop : 0;
+  view.innerHTML = (VIEWS[U.tab] || VIEWS.today)(lang, variant);
+  view.scrollTop = U.tab === "talk" && U.talk.scenario ? view.scrollHeight : keepScroll;
+  lastTab = U.tab;
+  updateBadge();
+}
+
+// ───────── actions ─────────
+async function talkCall(T, userMsg) {
+  const { lang, variant } = cur();
+  try {
+    const j = await aiJSON(tutorSystem(lang, variant, T.scenario), T.history, 800);
+    if (U.talk !== T) return;
+    const turn = normTurn(j, lang.romanize);
+    T.history.push({ role: "assistant", content: JSON.stringify(j) });
+    if (userMsg && turn.correction) userMsg.correction = turn.correction;
+    T.msgs.push({ role: "a", turn }); T.pending = null;
+    if (S.settings.autoSpeak && turn.reply) speak(turn.reply, variant.ttsLocale);
+  } catch (e) {
+    if (U.talk !== T) return;
+    T.err = e.message; T.pending = { userMsg };
+  }
+  T.busy = false; render();
+}
+function talkSubmit() {
+  const T = U.talk, text = (T.draft || "").trim();
+  if (!text || T.busy) return;
+  stopListening();
+  const spoken = T.spoken; T.spoken = false; T.draft = "";
+  addXp(spoken ? XP.talkSpoken : XP.talkTyped); S.stats.turns++; save();
+  const um = { role: "u", text, spoken };
+  T.msgs.push(um); T.history.push({ role: "user", content: text });
+  T.busy = true; T.err = null; render(); talkCall(T, um);
+}
+function startDrill(topic) {
+  U.drill = { topic: topic || DRILL_TOPICS[Math.floor(Math.random() * DRILL_TOPICS.length)], round: 0, left: 90, running: false, results: [], transcript: "", fb: null, busy: false, err: null, added: false, timer: null };
+}
+function drillStart() {
+  const D = U.drill, secs = [90, 60, 45][D.round];
+  D.left = secs; D.running = true; D.transcript = "";
+  listen({ lang: cur().variant.sttLocale, continuous: true, onText: (t) => { D.transcript = t; const el = $("#drillText"); if (el) el.textContent = t.slice(-220); } });
+  D.timer = setInterval(() => { D.left -= 1; const el = $("#timer"); if (el) el.textContent = String(Math.max(0, D.left)); if (D.left <= 0) drillFinish(); }, 1000);
+  render();
+}
+function drillFinish() {
+  const D = U.drill; if (!D || !D.running) return;
+  clearInterval(D.timer); D.running = false; stopListening();
+  const secs = [90, 60, 45][D.round], spent = secs - Math.max(0, D.left) || secs;
+  addXp(XP.drillRound); S.stats.drillRounds++; if (!srOK) S.stats.speakingSeconds += spent; save();
+  setTimeout(() => { if (U.drill !== D) return; D.results.push({ seconds: spent, words: countWords(D.transcript), transcript: D.transcript }); D.round++; D.transcript = ""; render(); }, 700);
+  render();
+}
+
+let primed = false;
+document.addEventListener("click", async (ev) => {
+  if (!primed && synth) { primed = true; try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch {} }
+  const tabBtn = ev.target.closest("#tabs button");
+  if (tabBtn) { stopListening(); if (U.listen.playing !== null) { U.listen.playing = null; try { synth && synth.cancel(); } catch {} } U.tab = tabBtn.dataset.tab; U.confirmReset = false; U.confirmDel = null; if (U.tab === "review") buildQueue(); render(); return; }
+  const el = ev.target.closest("[data-act]"); if (!el || el.disabled) return;
+  const act = el.dataset.act, v = el.dataset.v, { lang, variant } = cur();
+  switch (act) {
+    case "tab": U.tab = v; if (v === "review") buildQueue(); render(); break;
+    case "lang": S.currentLang = v; save(); resetForLanguage(); render(); break;
+    case "variant": S.variantByLang[lang.code] = v; save(); resetForLanguage(); render(); break;
+    case "say": speak(el.dataset.text, el.dataset.loc); break;
+    case "shadow": shadow(el.dataset.text, el.dataset.loc); break;
+
+    // talk
+    case "scenario": {
+      const T = (U.talk = freshTalk());
+      T.scenario = SCENARIOS.find((s) => s.id === v);
+      T.history = [{ role: "user", content: "(Start the conversation now. Greet me and open the scenario with a question.)" }];
+      T.busy = true; render(); talkCall(T, null); break;
+    }
+    case "new-talk": stopListening(); U.talk = freshTalk(); render(); break;
+    case "talk-retry": { const T = U.talk; T.err = null; T.busy = true; render(); talkCall(T, T.pending && T.pending.userMsg); break; }
+    case "send": talkSubmit(); break;
+    case "tr": { const m = U.talk.msgs[+el.dataset.i]; m.showTr = !m.showTr; render(); break; }
+    case "reveal-fix": { U.talk.msgs[+el.dataset.i].reveal = true; render(); break; }
+    case "retry-say": { const d = $("#draft"); if (d) d.focus(); break; }
+    case "mine": {
+      const p = U.talk.msgs[+el.dataset.i].turn.phrases[+el.dataset.j];
+      const n = addCards([p], lang.code, variant.id, "chat"); p.added = true; render(); toast(n ? "Added to your deck" : "Already in your deck"); break;
+    }
+    case "talk-mic": {
+      const T = U.talk;
+      if (T.listening) { stopListening(); break; }
+      const ok = listen({ lang: variant.sttLocale, onText: (t) => { T.draft = t; const d = $("#draft"); if (d) d.value = t; }, onEnd: () => { T.listening = false; render(); } });
+      if (ok) { T.listening = true; T.spoken = true; render(); }
+      break;
+    }
+
+    // review
+    case "review-mic": {
+      const R = U.review;
+      if (R.listening) { stopListening(); break; }
+      if (listen({ lang: variant.sttLocale, onText: (t) => { R.said = t; }, onEnd: () => { R.listening = false; render(); } })) { R.listening = true; render(); }
+      break;
+    }
+    case "reveal": { stopListening(); U.review.revealed = true; const c = S.cards[U.review.queue[0]]; if (c) speak(c.target, variant.ttsLocale); render(); break; }
+    case "grade": {
+      const R = U.review, c = S.cards[R.queue[0]]; if (!c) break;
+      const g = +v, today = dayKey();
+      if (c.srs.state === "new") S.newToday = { day: today, count: (S.newToday.day === today ? S.newToday.count : 0) + 1 };
+      c.srs = schedule(c.srs, g); S.stats.reviews++; addXp(XP.review[g]); save();
+      R.done++; buildQueue();
+      const nx = S.cards[R.queue[0]];
+      if (nx && nx.srs.reps > 0 && nx.srs.reps % 3 === 2) speak(nx.target, variant.ttsLocale);
+      render(); break;
+    }
+    case "requeue": buildQueue(); render(); break;
+
+    // phrases
+    case "ptab": U.phrasesTab = v; U.confirmDel = null; render(); break;
+    case "add-all": { const p = packsFor(lang.code).find((x) => x.id === v); const n = addCards(p.items, lang.code, p.variant === "all" ? variant.id : p.variant, p.id); toast(`Added ${n} phrase${n === 1 ? "" : "s"}`); render(); break; }
+    case "add-one": { const p = packsFor(lang.code).find((x) => x.id === v); addCards([p.items[+el.dataset.i]], lang.code, variant.id, p.id); render(); break; }
+    case "ask-del": U.confirmDel = v; render(); break;
+    case "del": delete S.cards[v]; U.confirmDel = null; save(); render(); break;
+    case "idea": { const t = $("#topic"); if (t) t.value = v; break; }
+    case "gen": {
+      const topic = ($("#topic") || {}).value?.trim(); if (!topic) { toast("Type a topic first"); break; }
+      const slangHeavy = !!($("#slangHeavy") || {}).checked;
+      U.gen = { busy: true, err: null }; render();
+      try {
+        const sys = `You write phrasebooks of how people ACTUALLY talk. You are a native ${lang.name} speaker from ${variant.label}. Only include expressions genuinely in current use in ${variant.label}. Mark vulgar items as "crude".`;
+        const prompt = `Make 20 high-frequency spoken chunks for: "${topic}".
+${slangHeavy ? "Mostly casual speech and slang that locals use with friends, plus a few neutral essentials." : "Mostly neutral or polite essentials, plus a few casual alternatives."}
+Prefer whole reusable phrases over single words. Order from most to least useful.
+Return ONLY a JSON array: [{"target": "...", ${lang.romanize ? '"romanization": "...", ' : ""}"meaning": "English", "register": "polite|neutral|casual|slang|crude", "note": "short usage tip or empty"}]`;
+        const items = cleanPhrases(await aiJSON(sys, [{ role: "user", content: prompt }], 3000), lang.romanize);
+        if (!items.length) throw new Error("No phrases came back. Try a different topic.");
+        S.customPacks.unshift({ id: "custom-" + Date.now(), lang: lang.code, variant: variant.id, title: `${topic} (${variant.label})`, kind: "custom", items });
+        save(); U.gen = { busy: false, err: null }; U.phrasesTab = "packs"; toast("Pack ready");
+      } catch (e) { U.gen = { busy: false, err: e.message }; }
+      render(); break;
+    }
+
+    // settings
+    case "set": S.settings[el.dataset.k] = el.dataset.num === "1" ? +v : v; save(); render(); break;
+    case "save-key": { const k = ($("#apikey") || {}).value?.trim(); if (!k) { toast("Paste a key first"); break; } lsSet(KEY_API, k); toast("Key saved on this phone"); render(); break; }
+    case "del-key": lsDel(KEY_API); toast("Key removed"); render(); break;
+    case "add-lang": {
+      const name = $("#clName").value.trim(), locale = $("#clLocale").value.trim(), vl = $("#clVariant").value.trim(), rom = $("#clRoman").checked;
+      if (name.length < 2 || !/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(locale)) { toast("Add a name and a locale code like pt-BR"); break; }
+      const code = "x-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      S.customLanguages = S.customLanguages.filter((l) => l.code !== code).concat([{ code, name, nativeName: name, romanize: rom, builtIn: false, variants: [{ id: "default", label: vl || "Standard", ttsLocale: locale, sttLocale: locale }] }]);
+      S.currentLang = code; S.variantByLang[code] = "default"; save(); resetForLanguage(); toast(name + " added"); render(); break;
+    }
+    case "test-voice": { const loc = $("#clLocale").value.trim(); if (loc) speak("1, 2, 3", loc); break; }
+    case "rm-lang": S.customLanguages = S.customLanguages.filter((l) => l.code !== v); if (S.currentLang === v) S.currentLang = "es"; save(); resetForLanguage(); render(); break;
+    case "copy-backup": {
+      const json = JSON.stringify(S);
+      try { await navigator.clipboard.writeText(json); U.backup = ""; toast("Backup copied"); } catch { U.backup = json; render(); const b = $("#backupOut"); if (b) b.select(); }
+      break;
+    }
+    case "restore": {
+      try { const x = JSON.parse($("#restoreIn").value); if (!x || typeof x.cards !== "object") throw 0; S = migrate(x); save(); resetForLanguage(); toast("Progress restored"); render(); }
+      catch { toast("That doesn't look like a Parley backup"); }
+      break;
+    }
+    case "reset":
+      if (!U.confirmReset) { U.confirmReset = true; render(); break; }
+      { const keep = S.settings, langs = S.customLanguages; S = DEFAULT(); S.settings = keep; S.customLanguages = langs; U.confirmReset = false; save(); resetForLanguage(); toast("Progress erased"); render(); }
+      break;
+
+    // listen
+    case "listen": U.tab = "listen"; render(); break;
+    case "story-gen": {
+      const topic = ($("#storyTopic") || {}).value?.trim() || STORY_TOPICS[Math.floor(Math.random() * STORY_TOPICS.length)];
+      const L = U.listen; L.busy = true; L.err = null; L.playing = null; try { synth && synth.cancel(); } catch {} render();
+      try { const story = await genStory(lang, variant, topic); S.lastStory[lang.code] = story; save(); U.listen = { busy: false, err: null, playing: null, showRom: false, showEn: false, open: {}, rewarded: false }; }
+      catch (e) { L.busy = false; L.err = e.message; }
+      render(); break;
+    }
+    case "story-play": { const L = U.listen; if (L.playing !== null) { L.playing = null; try { synth && synth.cancel(); } catch {} render(); } else playStoryFrom(0); break; }
+    case "story-sent": { const L = U.listen, i = +el.dataset.i, s = S.lastStory[lang.code].sentences[i]; L.playing = null; L.open[i] = true; render(); speak(s.text, variant.ttsLocale); break; }
+    case "story-rom": U.listen.showRom = !U.listen.showRom; render(); break;
+    case "story-en": U.listen.showEn = !U.listen.showEn; render(); break;
+    case "story-add": { const p = S.lastStory[lang.code].newWords[+el.dataset.i]; addCards([p], lang.code, variant.id, "story"); render(); break; }
+    case "core-next": {
+      U.coreBusy = true; U.coreErr = null; render();
+      try {
+        const known = Object.values(S.cards).filter((c) => c.lang === lang.code).map((c) => cleanSpeech(c.target)).slice(-600);
+        const sys = `You are building a frequency-first speaking course for ${lang.name} as spoken in ${variant.label}. Learner level: ${LEVEL_GUIDE[S.settings.level]}`;
+        const prompt = `The learner's deck already contains: ${known.join(" / ") || "nothing yet"}.
+Give the next 20 most frequent words in everyday spoken ${lang.name} that are NOT already covered above, in frequency order, most common first. Put each inside a short, high-utility phrase or sentence people actually say, so the word is learned as a chunk. Mostly neutral or casual register.${lang.code === "zh" ? " Simplified characters; Hanyu Pinyin with tone marks, written as spoken (tone changes applied)." : ""}
+Return ONLY a JSON array: [{"target": "the phrase", ${lang.romanize ? '"romanization": "...", ' : ""}"meaning": "English", "register": "polite|neutral|casual|slang|crude", "note": "the core word and its meaning"}]`;
+        const items = cleanPhrases(await aiJSON(sys, [{ role: "user", content: prompt }], 3000), lang.romanize);
+        if (!items.length) throw new Error("Nothing came back. Try again.");
+        const n = addCards(items, lang.code, variant.id, "core");
+        S.corePath[lang.code] = (S.corePath[lang.code] || 0) + 1; save(); toast(`Added ${n} core phrases to your deck`);
+      } catch (e) { U.coreErr = e.message; }
+      U.coreBusy = false; render(); break;
+    }
+
+    // tones
+    case "tone-mode": U.tones.mode = v; newToneRound(); render(); speakVaried(U.tones.cur.w[0], "zh-CN"); break;
+    case "tones": if (!U.tones.mode) U.tones.mode = pickToneMode(); newToneRound(); U.tab = "tones"; render(); speakVaried(U.tones.cur.w[0], "zh-CN"); break;
+    case "tone-play": speakVaried(U.tones.cur.w[0], "zh-CN"); break;
+    case "tone-pick": {
+      const T = U.tones, p = T.cur.w[3], ok = v === p, k = (T.cur.single ? "s" : "") + p;
+      const s = S.toneStats[k] || { n: 0, ok: 0 }; S.toneStats[k] = { n: s.n + 1, ok: s.ok + (ok ? 1 : 0) };
+      T.answered = v; T.total++; if (ok) T.right++; addXp(ok ? 3 : 1); save(); render();
+      if (!ok) speakVaried(T.cur.w[0], "zh-CN");
+      break;
+    }
+    case "tone-next": newToneRound(); render(); speakVaried(U.tones.cur.w[0], "zh-CN"); break;
+    case "save-tonelab": { const u = ($("#tonelab") || {}).value?.trim() || ""; if (u && !/^https:\/\//.test(u)) { toast("Use the full https:// link"); break; } S.settings.toneLabUrl = u; save(); toast(u ? "Tone Lab link saved" : "Tone Lab link removed"); render(); break; }
+
+    // drill
+    case "drill": startDrill(); U.tab = "drill"; render(); break;
+    case "drill-topic": startDrill(); render(); break;
+    case "drill-start": drillStart(); break;
+    case "drill-stop": drillFinish(); break;
+    case "drill-again": startDrill(U.drill.topic); render(); break;
+    case "drill-new": startDrill(); render(); break;
+    case "drill-fb": {
+      const D = U.drill, last = [...D.results].reverse().find((r) => r.transcript); if (!last) break;
+      D.busy = true; D.err = null; render();
+      try {
+        const sys = `You are a supportive ${lang.name} speaking coach from ${variant.label}. Learner level: ${LEVEL_GUIDE[S.settings.level]}`;
+        const prompt = `The learner spoke for about a minute on: "${D.topic}". Speech-to-text transcript (may contain recognition errors; ignore those):
+"""${last.transcript}"""
+Give feedback that makes the next attempt more fluent and natural:
+- summary: 1-2 sentences in English on what went well and the main thing to work on.
+- fixes: up to 4 items, each a phrase they said and how a local from ${variant.label} would say it.
+- phrases: 3-5 chunks they could have used on this topic (fillers, connectors, natural expressions).
+Return ONLY JSON: {"summary": "...", "fixes": [{"said": "...", "better": "...", "why": "..."}], "phrases": [{"target": "...", ${lang.romanize ? '"romanization": "...", ' : ""}"meaning": "...", "register": "polite|neutral|casual|slang|crude", "note": "..."}]}`;
+        const j = await aiJSON(sys, [{ role: "user", content: prompt }], 1500);
+        if (U.drill !== D) return;
+        D.fb = { summary: String(j.summary || ""), fixes: Array.isArray(j.fixes) ? j.fixes.map((f) => ({ said: String(f.said || ""), better: String(f.better || ""), why: String(f.why || "") })) : [], phrases: cleanPhrases(j.phrases, lang.romanize) };
+      } catch (e) { D.err = e.message; }
+      D.busy = false; render(); break;
+    }
+    case "drill-add": { const D = U.drill; addCards(D.fb.phrases, lang.code, variant.id, "drill"); D.added = true; render(); break; }
+  }
+});
+document.addEventListener("input", (ev) => {
+  if (ev.target.id === "draft") {
+    U.talk.draft = ev.target.value;
+    const b = $("#sendBtn"); if (b) b.classList.toggle("off", !ev.target.value.trim());
+  }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.id === "draft" && ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); talkSubmit(); }
+});
+document.addEventListener("change", (ev) => { if (ev.target.id === "autoSpeak") { S.settings.autoSpeak = ev.target.checked; save(); } });
+
+// ───────── durable storage inside the Claude app ─────────
+(async () => {
+  if (!(window.claude && typeof window.claude.use === "function")) return;
+  const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+  if (!db) return;
+  try {
+    const [qs, meta] = await Promise.all([db.collection("slang_zh").get(), db.doc("meta/slang_zh").get()]);
+    LIVE = { items: qs.docs.filter((d) => d.exists).map((d) => ({ id: d.id, ...d.data() })), meta: meta.exists ? meta.data() : null };
+    render();
+  } catch {}
+  if (!user) return;
+  const id = await user.id(); if (!id) return;
+  const ref = db.collection("data/users/" + id).doc("state");
+  const snap = await ref.get();
+  const remote = snap.exists ? snap.data() : null;
+  if (remote && typeof remote.json === "string" && (remote.savedAt || 0) > (S.savedAt || 0)) {
+    S = migrate(JSON.parse(remote.json)); lsSet(KEY_STATE, remote.json); resetForLanguage(); render();
+  }
+  dbRef = ref;
+  if (!remote && S.savedAt) save();
+})().catch(() => {});
+
+if (window.PARLEY_STANDALONE && "serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+buildQueue();
+render();
+</script>
+
+</body>
+</html>
